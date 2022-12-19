@@ -1,0 +1,14 @@
+// MIT License
+// Copyright (c) 2022 Gauthier FRANCOIS
+
+=@timestamp
+div.container
+  div.timerDisplay
+    div id='hours' =@timestamp[:hours]
+    div id='minutes' =@timestamp[:minutes]
+    div id='seconds' =@timestamp[:seconds]
+    div id='milliseconds' =@timestamp[:milliseconds]
+  div.buttons
+    button id="pauseTimer" Pause
+    button id="startTimer" Start
+    button id="resetTimer" Reset

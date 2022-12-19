@@ -1,0 +1,62 @@
+// MIT License
+// Copyright (c) 2022 Gauthier FRANCOIS
+
+.uk-heading-small.uk-heading-divider List of open runs
+. List of runs
+- @runs.each do |name, status|
+  a.link.uk-button.uk-button-default.uk-background-primary href="/runs?run=#{name}" =name
+  - if status == 'close'
+    a.link.uk-button.uk-button-default.uk-background-muted href="/close_run?run=#{name}&status=open" open
+  - if status == 'open'
+    a.link.uk-button.uk-button-default.uk-background-muted href="/close_run?run=#{name}&status=close" close
+  br
+
+- if params[:run]
+  .uk-heading-small.uk-heading-divider Manage #{params[:run]} (#{@runs[params[:run]] == 'close' ? 'closed' : 'opened'})
+  .uk-child-width-1-2s.uk-grid
+    .uk-width-1-2
+      - if @run.empty?
+        ="The run is empty"
+      - else
+        ="Competitors list:"
+        .uk-margin
+        table.uk-table.uk-table-striped
+          tr
+            th
+              ="Order"
+            th
+              ="Number"
+            th
+              ="Team name"
+            th
+              ="Remove"
+          - @run.each_with_index do |competitor, idx|
+            tr
+              td
+                =idx + 1
+              td
+                ="##{competitor}"
+              td
+                =@all_competitors[competitor]['name']
+              td
+                - if @runs[params[:run]] == 'open'
+                  a.link.uk-button.uk-button-muted.uk-background-danger href="/rem_to_run?run=#{params[:run]}&competitor=#{competitor}" ="X"
+                - else
+                  i.link.uk-button.uk-button-muted.uk-background-danger
+    .uk-width-1-2
+      -@competitors.each  do |number, competitor|
+        - if @runs[params[:run]] == 'open'
+          a.link.uk-button.uk-button-default.uk-background-primary href="/add_to_run?run=#{params[:run]}&competitor=#{number}" ="#{number} - #{competitor['name']}"
+        br
+.uk-heading-small.uk-heading-divider Create run
+form action='/create_run' method='POST'
+  label
+    ="Run number: "
+    input type='text' name='run_number'
+  input.button.uk-button.uk-button-default.uk-background-muted.uk-margin-left type='submit' value='Create'
+.uk-heading-small.uk-heading-divider Delete run
+form action='/delete_run' method='POST'
+  label
+    ="Run number: "
+    input type='text' name='run_number'
+  input.button.uk-button.uk-button-default.uk-background-muted.uk-margin-left type='submit' value='Delete'
