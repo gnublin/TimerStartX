@@ -4,21 +4,42 @@
 .uk-heading-small.uk-heading-divider List of open runs
 . List of runs
 - @runs.each do |name, status|
-  a.link.uk-button.uk-button-default.uk-background-primary href="/runs?run=#{name}" =name
-  - if status == 'close'
-    a.link.uk-button.uk-button-default.uk-background-muted href="/close_run?run=#{name}&status=open" open
-  - if status == 'open'
-    a.link.uk-button.uk-button-default.uk-background-muted href="/close_run?run=#{name}&status=close" close
+  - if status != 'archived'
+    a.link.uk-button.uk-button-default.uk-background-primary href="/runs?run=#{name}" =name
+  -else
+    a.uk-button.uk-button-default.uk-background-primary disabled="true" =name
+  - if status == 'closed' || status == 'stopped'
+    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=opened" Open
+    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=started" Start
+  - if status == 'opened'
+    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=closed" Close
+  - elsif status == 'started'
+    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=stopped" Stop run
+  - elsif status == 'archived'
+    a.link.uk-button.uk-button-default.uk-button-danger uk-toggle="target: #modal-unarchived-#{name}" unarchived
+  - else
+    a.link.uk-button.uk-button-secondary href="/status_run?run=#{name}&status=archived" archived
   br
 
-- if params[:run]
-  .uk-heading-small.uk-heading-divider Manage #{params[:run]} (#{@runs[params[:run]] == 'close' ? 'closed' : 'opened'})
+  .uk-modal id="modal-unarchived-#{name}" uk-modal=""
+    .uk-modal-dialog.uk-modal-body
+      h2.uk-modal-title = "Run"
+      form action="/status_run?run=#{name}&status=opened" method="GET"
+        = "Are you sure you would like to unarchived this run #{name}"
+        br
+        input.uk-input value=name name='run' readonly='true' hidden='true'
+        input.uk-input value='closed' name='status' readonly='true' hidden='true'
+        button.uk-button.uk-button-default.uk-modal-close type="button" Cancel
+        input.button.uk-button.uk-button-danger type="submit" value="unarchived"
+
+- if params[:run] && @runs[params[:run]] != 'archived'
+  .uk-heading-small.uk-heading-divider Manage #{params[:run]} (#{@runs[params[:run]]})
   .uk-child-width-1-2s.uk-grid
     .uk-width-1-2
       - if @run.empty?
         ="The run is empty"
       - else
-        ="Competitors list:"
+        ="Competitors list (in run):"
         .uk-margin
         table.uk-table.uk-table-striped
           tr
@@ -39,24 +60,43 @@
               td
                 =@all_competitors[competitor]['name']
               td
-                - if @runs[params[:run]] == 'open'
+                - if @runs[params[:run]] == 'opened' || @runs[params[:run]] == 'started'
                   a.link.uk-button.uk-button-muted.uk-background-danger href="/rem_to_run?run=#{params[:run]}&competitor=#{competitor}" ="X"
-                - else
+                - elsif @runs[params[:run]] == 'closed'
                   i.link.uk-button.uk-button-muted.uk-background-danger
     .uk-width-1-2
-      -@competitors.each  do |number, competitor|
-        - if @runs[params[:run]] == 'open'
+      ="Competitors list (not in run):"
+      .uk-margin
+      -@competitors.reject { |_, v| v.key? @run_in_progress }.each  do |number, competitor|
+        - if @runs[params[:run]] == 'opened' || @runs[params[:run]] == 'started'
           a.link.uk-button.uk-button-default.uk-background-primary href="/add_to_run?run=#{params[:run]}&competitor=#{number}" ="#{number} - #{competitor['name']}"
-        br
+  .uk-margin
+  .uk-margin
+  ="Competitors already have ts_start:"
+  .uk-margin
+  -@competitors.select { |_, v| v.key? @run_in_progress }.each  do |number, competitor|
+    - if @runs[params[:run]] == 'opened' || @runs[params[:run]] == 'started'
+      .uk-text ="#{number} - #{competitor['name']}"
+
 .uk-heading-small.uk-heading-divider Create run
 form action='/create_run' method='POST'
   label
     ="Run number: "
     input type='text' name='run_number'
   input.button.uk-button.uk-button-default.uk-background-muted.uk-margin-left type='submit' value='Create'
+
 .uk-heading-small.uk-heading-divider Delete run
-form action='/delete_run' method='POST'
-  label
-    ="Run number: "
-    input type='text' name='run_number'
-  input.button.uk-button.uk-button-default.uk-background-muted.uk-margin-left type='submit' value='Delete'
+- @runs.each do |name, status|
+  - if status != 'archived'
+    label ="Name: #{name}"
+    a.uk-margin-left.uk-button.uk-button-danger uk-toggle="target: #modal-delete-run-#{name}" Delete run
+    br
+    br
+    .uk-modal id="modal-delete-run-#{name}" uk-modal=""
+      .uk-modal-dialog.uk-modal-body
+        form action='/delete_run' method='POST'
+          ="Are you sure you want to delete the run: #{name}"
+          br
+          input type='hidden' name='run_number' value=name
+          button.uk-button.uk-button-default.uk-modal-close type="button" Cancel
+          input.button.uk-button.uk-button-danger type="submit" value="Delete"

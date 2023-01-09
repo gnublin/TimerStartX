@@ -24,7 +24,7 @@ table.uk-table.uk-table-striped
       .uk-modal-dialog.uk-modal-body
         h2.uk-modal-title = "Competitor"
         form action="/update_competitor" method="POST"
-          input.uk-input.uk-form-small.uk-background-default name="number" value=number
+          input.uk-input.uk-form-small.uk-background-default type='number' name="number" value=number
           input.uk-input.uk-form-small.uk-background-default name="name" value=competitor['name']
           input hidden=true name="old_number" readonly=true value=number
           button.uk-button.uk-button-default.uk-modal-close type="button" Cancel
@@ -48,5 +48,5 @@ form action='/create_competitor' method='POST'
   .uk-margin
     label
       ="Number: "
-      input type='text' name='number'
+      input type='number' name='number'
   input.button.uk-button.uk-button-default.uk-background-muted type='submit' value='Create'
