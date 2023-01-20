@@ -1,14 +1,14 @@
 const Http = new XMLHttpRequest();
 
 function call_http(ts_state) {
-  url = 'http://localhost:9292/push?';
+  url = '/competitor_';
   url = url + ts_state;
-  url = url + '=';
-  tdate = new Date().getTime()
-  url = url + tdate
-  Http.open("GET", url);
-  Http.send();
+  tdate = new Date().getTime();
+  Http.open("POST", url, true);
+  Http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   Http.onreadystatechange = (e) => {
     console.log(Http.responseText)
   }
+  Http.send(`ts=${tdate}`);
+
 }

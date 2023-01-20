@@ -1,0 +1,30 @@
+// MIT License
+// Copyright (c) 2022 Gauthier FRANCOIS
+
+=@competitor
+br/
+br/
+- @competitor.reject{ |a,_| a == 'name'}.each do |run, run_infos|
+
+  h2.uk-modal-title #{run}
+  form action='competitor_modify_run' method='post'
+    input type="hidden" name='name' value="#{params[:competitor]}"
+    input type="hidden" name='run_name' value="#{run}"
+    =run_infos
+    br
+    br
+    - if run_infos.key? 'ts_start'
+      label ts_start :
+      input type='number' name="ts_start" value="#{run_infos['ts_start']}"
+
+    - if run_infos.key? 'ts_stop'
+      br
+      label ts_stop :
+      input type="#{run_infos['ts_stop'] == 'crashed' ? 'text' : 'number' }'" name="ts_stop" value="#{run_infos['ts_stop']}"
+
+    - if run_infos.key? 'ts_time'
+      br
+      label ts_time :
+      input type="#{run_infos['ts_time'] == 'crashed' ? 'text' : 'number' }'" name="ts_time" value="#{run_infos['ts_time']}"
+    br
+    input type='submit' value='Update run'

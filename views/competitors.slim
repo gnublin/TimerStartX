@@ -10,8 +10,7 @@ table.uk-table.uk-table-striped
       ="Team name"
     th
       = "Actions"
-  - @competitors.each do |number, competitor|
-    - competitor = JSON.parse(competitor)
+  - @all_competitors.each do |number, competitor|
     tr
       td
         ="##{number}"
@@ -20,6 +19,7 @@ table.uk-table.uk-table-striped
       td
         a.uk-button.uk-button-default.uk-background-primary uk-toggle="target: #modal-create_dir-#{number}" edit
         a.uk-button.uk-button-default.uk-button-danger.uk-background-secondary uk-toggle="target: #modal-delete_dir-#{number}" delete
+        a.uk-button.uk-button-default.uk-background-primary href="/competitor_runs?competitor=#{number}" manage runs
     .uk-modal id="modal-create_dir-#{number}" uk-modal=""
       .uk-modal-dialog.uk-modal-body
         h2.uk-modal-title = "Competitor"

@@ -16,7 +16,7 @@
       - competitors = @all_competitors.select { |k, v| v.key? run_name}
       - competitors_crashed = competitors.select { |k, v| v[run_name]['ts_time'] == 'crashed'}
       - competitors = competitors.reject { |k, v| v[run_name]['ts_time'].nil? || v[run_name]['ts_time'] == 'crashed'}
-      - sorted_competitors = competitors.sort_by { |k, v| v[run_name]['ts_time']}.to_h
+      - sorted_competitors = competitors.sort_by { |k, v| v[run_name]['ts_time'].to_i}.to_h
       - sorted_competitors.merge!(competitors_crashed)
       - sorted_competitors.each do |number, infos|
         -if infos[run_name]
@@ -29,7 +29,7 @@
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'
               - else
-                - time = get_duration_hrs_and_mins(infos[run_name]['ts_time'])
+                - time = get_duration_hrs_and_mins(infos[run_name]['ts_time'].to_i)
                 - if time.is_a? Hash
                   - min = "0#{time[:minutes]}".reverse[0,2].reverse
                   - sec = "0#{time[:seconds]}".reverse[0,2].reverse

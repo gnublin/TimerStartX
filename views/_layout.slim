@@ -39,14 +39,26 @@ html
                   td id="seconds-#{nb}" = "#{@runs_in[run][:ts][:seconds].to_i}"
                   td id="milliseconds-#{nb}" = "#{@runs_in[run][:ts][:milliseconds].to_i}"
                   td.uk-table-expand
-                    a.uk-text-capitalize href="/push?ts_crashed=#{@runs_in[run][:name]}" Crashed
+                    form method='POST' action='competitor_crash'
+                      input type='hidden' name='ts' value=@runs_in[run][:name]
+                      input.uk-button.uk-button-link.uk-button-small type='submit' value='Crashed'
 
       .margin-left.uk-navbar-right
-        ul.uk-navbar-nav
+        ul.uk-list
           li
-            a.uk-text-capitalize onclick="call_http('ts_start')" Start
+            a.uk-text-capitalize.uk-button.uk-button-secondary.uk-button-small  onclick="call_http('start')" Start
           li
-            a.uk-text-capitalize onclick="call_http('ts_stop')" Stop
+            a.uk-text-capitalize.uk-button.uk-button-secondary.uk-button-small onclick="call_http('stop')" Stop
+        ul.uk-list
+          - %w(start finish).each do |portal_name|
+            - @portals_status[portal_name] = 'closed' unless @portals_status.key? portal_name
+            li
+              form method='post' action='/portal_update_status'
+                input type='hidden' name='portal_name' value=portal_name
+                input type='hidden' id="sub-#{portal_name}" name='portal_status' value="#{@portals_status[portal_name] == 'closed' ? 'opened' : 'closed'}"
+                label.uk-form-label for="sub-#{portal_name}" #{portal_name.upcase} is&nbsp;
+                span.uk-label class="#{@portals_status[portal_name] == 'closed' ? 'uk-label-danger' : 'uk-label-success'}" #{@portals_status[portal_name]}
+                input.uk-text-capitalize.uk-button.uk-button-small class="#{@portals_status[portal_name] == 'closed' ? 'uk-button-success' : 'uk-button-danger'}" type='submit' id="sub-#{portal_name}" value="#{@portals_status[portal_name] == 'closed' ? 'open' : 'close'}"
     .uk-container.uk-container-large.uk-position-relative uk-height-viewport="expand: true"
         = @log_msg
         == yield

@@ -46,6 +46,7 @@ class TimerStartX < Sinatra::Application
     @run_in_progress = @runs.select { |_, status| status == 'started' }.keys.first
     @runs_in = {}
     @all_competitors = hm_getall(redis, 'competitors')
+    @portals_status = redis.hgetall('portals')
     unless @run_in_progress.nil?
       competitors_inprogress.each_with_index do |competitor, idx|
         time_competitor = JSON.parse(redis.hmget('competitors', competitor).first)[@run_in_progress]['ts_start']
@@ -63,40 +64,24 @@ class TimerStartX < Sinatra::Application
   end
 
   get '/' do
-    k = ((Time.now - 10.minutes.ago) * 1000).to_i
-    @timestamp = get_duration_hrs_and_mins(k)
     slim :view
-  end
-
-  get '/start' do
-    redis = Redis.new
-    ts = params[:ts]
-    redis.set('run1:test1', 'hello world')
   end
 
   get '/runs' do
     redis = Redis.new
-    @runs = redis.hgetall('runs')
     if params[:run]
       @run = redis.lrange(params[:run], 0, -1).reverse
       competitors_in_run = redis.lrange(params[:run], 0, -1).map { |a| a.split(':')[0] }
-      @all_competitors = hm_getall(redis, 'competitors')
       @competitors = @all_competitors.reject { |k, _| competitors_in_run.include? k }
     end
     redis.close
     slim :runs
   end
 
-  get '/add_to_run' do
+  post '/modify_run' do
     redis = Redis.new
-    @run = redis.lpush(params[:run].to_s, params[:competitor].to_s)
-    redis.close
-    redirect "/runs?run=#{params[:run]}"
-  end
-
-  get '/rem_to_run' do
-    redis = Redis.new
-    @run = redis.lrem(params[:run].to_s, -1, params[:competitor].to_s)
+    redis.lrem(params[:run].to_s, -1, params[:competitor].to_s) if params[:action] == 'remove_competitor'
+    redis.lpush(params[:run].to_s, params[:competitor].to_s) if params[:action] == 'add_competitor'
     redis.close
     redirect "/runs?run=#{params[:run]}"
   end
@@ -104,7 +89,7 @@ class TimerStartX < Sinatra::Application
   get '/status_run' do
     redis = Redis.new
     all_status = redis.hgetall('runs')
-    already_started = all_status.select{|_, a| a == 'started'}
+    already_started = all_status.select { |_, a| a == 'started' }
     redis.hset('runs', params[:run], params[:status]) if params[:status] != 'started' || already_started.empty?
     redis.close
     redirect "/runs?run=#{params[:run]}"
@@ -131,10 +116,33 @@ class TimerStartX < Sinatra::Application
   end
 
   get '/competitors' do
-    redis = Redis.new
-    @competitors = redis.hgetall('competitors')
-    redis.close
     slim :competitors
+  end
+
+  get '/competitor_runs' do
+    redirect '/competitors' if params[:competitor].nil?
+    redis = Redis.new
+    @competitor = JSON.parse(redis.hget('competitors', params[:competitor]))
+    redis.close
+    slim :competitor_runs
+  end
+
+  post '/competitor_modify_run' do
+    competitor = params['name']
+    competitor_run = {}
+    competitor_run['ts_start'] = params['ts_start'] if params['ts_start']
+    if params['ts_stop']
+      competitor_run['ts_stop'] = params['ts_stop'] == 'crashed' ? params['ts_stop'] : params['ts_stop'].to_i
+    end
+    if params['ts_time']
+      competitor_run['ts_time'] = params['ts_time'] == 'crashed' ? params['ts_time'] : params['ts_time'].to_i
+    end
+    redis = Redis.new
+    competitor_infos = JSON.parse(redis.hget('competitors', competitor))
+    competitor_infos[params['run_name']] = competitor_run
+    redis.hmset('competitors', competitor, competitor_infos.to_json)
+    redis.close
+    redirect "/competitor_runs?competitor=#{competitor}"
   end
 
   post '/delete_competitor' do
@@ -177,49 +185,91 @@ class TimerStartX < Sinatra::Application
     end
   end
 
-  get '/push' do
+  post '/competitor_start' do
+    return if @portals_status['start'] == 'closed' && params['mode'] == 'auto'
+
     redis = Redis.new
-    started_run = redis.hgetall('runs').select { |_, status| status == 'started' }
-    if started_run.empty?
-      puts 'emtpy'
-    else
-      run_id = started_run.keys.first
-    end
-    run_len = redis.lrange(run_id, 0, -1).size
+    run_len = redis.lrange(@run_in_progress, 0, -1).size
     competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
     competitor_inprogress_len = competitor_inprogress.size
-    if params[:ts_start] && run_len.positive? && competitor_inprogress_len < 2
-      competitor = redis.rpop(run_id)
+    if params[:ts] && run_len.positive? && competitor_inprogress_len < 2
+      competitor = redis.rpop(@run_in_progress)
       competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-      competitor_infos[run_id] = { ts_start: params[:ts_start] }
+      competitor_infos[@run_in_progress] = { ts_start: params[:ts] }
       redis.hmset('competitors', competitor, competitor_infos.to_json)
       redis.rpush('run:inprogress', competitor)
     end
-    if params[:ts_stop] && competitor_inprogress_len.positive?
-      competitor = redis.lpop('run:inprogress')
-      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-      competitor_infos[run_id].merge!({ ts_stop: params[:ts_stop] })
-      competitor_infos[run_id].merge!({ ts_time: (params[:ts_stop].to_i - competitor_infos[run_id]['ts_start'].to_i) })
-      redis.hmset('competitors', competitor, competitor_infos.to_json)
-    end
-    if params[:ts_crashed] && competitor_inprogress_len.positive?
-      competitor =
-        if competitor_inprogress.index(params[:ts_crashed]) == 0
-          redis.lpop('run:inprogress')
-        elsif competitor_inprogress.index(params[:ts_crashed]) == 1
-          redis.rpop('run:inprogress')
-        end
-      p competitor
-      p redis.hget('competitors', competitor)
-      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-      competitor_infos[run_id].merge!({ ts_stop: 'crashed' })
-      competitor_infos[run_id].merge!({ ts_time: 'crashed' })
-      redis.hmset('competitors', competitor, competitor_infos.to_json)
-    end
+    redis.hset('portals', 'start', 'closed') if params['mode'] == 'auto'
+    redis.close
     connections.each do |out|
       out << "data: #{params}\n\n"
       out.close
     end
     ''
   end
+
+  post '/competitor_stop' do
+    return if @portals_status['finish'] == 'closed' && params['mode'] == 'auto'
+
+    redis = Redis.new
+    competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
+    competitor_inprogress_len = competitor_inprogress.size
+    if params[:ts] && competitor_inprogress_len.positive?
+      competitor = redis.lpop('run:inprogress')
+      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
+      competitor_infos[@run_in_progress].merge!({ ts_stop: params[:ts] })
+      competitor_infos[@run_in_progress].merge!(
+        { ts_time: (params[:ts].to_i - competitor_infos[@run_in_progress]['ts_start'].to_i) }
+      )
+      redis.hmset('competitors', competitor, competitor_infos.to_json)
+    end
+    redis.hset('portals', 'finish', 'closed') if params['mode'] == 'auto'
+    redis.close
+    connections.each do |out|
+      out << "data: #{params}\n\n"
+      out.close
+    end
+    ''
+  end
+
+  post '/competitor_crash' do
+    redis = Redis.new
+    competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
+    competitor_inprogress_len = competitor_inprogress.size
+    if params[:ts] && competitor_inprogress_len.positive?
+      case competitor_inprogress.index(params[:ts])
+      when 0
+        competitor = redis.lpop('run:inprogress')
+      when 1
+        competitor = redis.rpop('run:inprogress')
+      end
+
+      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
+      competitor_infos[@run_in_progress].merge!({ ts_stop: 'crashed' })
+      competitor_infos[@run_in_progress].merge!({ ts_time: 'crashed' })
+      redis.hmset('competitors', competitor, competitor_infos.to_json)
+    end
+    redis.close
+    connections.each do |out|
+      out << "data: #{params}\n\n"
+      out.close
+    end
+    ''
+  end
+
+  get '/push' do
+    connections.each do |out|
+      out << "data: #{params}\n\n"
+      out.close
+    end
+    ''
+  end
+
+  post '/portal_update_status' do
+    redis = Redis.new
+    redis.hset('portals', params[:portal_name], params[:portal_status])
+    redis.close
+    redirect '/'
+  end
+
 end
