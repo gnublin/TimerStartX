@@ -165,8 +165,7 @@ class TimerStartX < Sinatra::Application
   post '/create_competitor' do
     if !params[:number].empty? && !params[:name].empty?
       redis = Redis.new
-      @competitors = redis.hgetall('competitors')
-      if @competitors.key?(params[:number])
+      if @all_competitors.key?(params[:number])
         session[:message] = 'already exist'
       else
         redis.hmset('competitors', params[:number], { name: params[:name] }.to_json)
