@@ -7,8 +7,14 @@ require 'redis'
 require 'json'
 require 'sinatra'
 require 'sinatra/base'
+require 'sinatra/config_file'
+require 'sinatra/namespace'
 require 'slim'
 require 'puma'
+
+require_relative 'http_api'
+require_relative 'admin_competitor'
+require_relative 'admin_run'
 
 def get_duration_hrs_and_mins(milliseconds)
   return '' unless milliseconds
@@ -34,15 +40,22 @@ end
 
 # TimerStartX application
 class TimerStartX < Sinatra::Application
+  include AdminRun
+
   set :root, "#{File.dirname(__FILE__)}/.."
   set :slim, layout: :_layout
   set :public_folder, 'public'
-  connections = []
+
+  config_file_name = "#{File.dirname(__FILE__)}/../config/#{environment}.yml"
+  raise "config file #{config_file_name} missing" unless File.exist? config_file_name
+
+  config_file config_file_name
 
   before do
     redis = Redis.new
     @runs = redis.hgetall('runs')
     competitors_inprogress = redis.lrange('run:inprogress', 0, -1)
+    @race_distance = settings.race_distance || 0
     @run_in_progress = @runs.select { |_, status| status == 'started' }.keys.first
     @runs_in = {}
     @all_competitors = hm_getall(redis, 'competitors')
@@ -63,212 +76,124 @@ class TimerStartX < Sinatra::Application
     session.delete :message
   end
 
+  helpers do
+    def protected!
+      session[:admin_menu] = true if authorized?
+      return if authorized?
+
+      session[:admin_menu] = false if authorized?
+      headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+
+      halt 401, "Not authorized\n"
+    end
+
+    def authorized?
+      @auth ||= Rack::Auth::Basic::Request.new(request.env)
+      credentials = [settings.htaccess['logging'], settings.htaccess['password']]
+      @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == credentials
+    end
+
+    def authenticated?
+      @auth ||= Rack::Auth::Basic::Request.new(request.env)
+      @auth.provided? and @auth.basic?
+    end
+  end
+
   get '/' do
     slim :view
   end
 
-  get '/runs' do
-    redis = Redis.new
-    if params[:run]
-      @run = redis.lrange(params[:run], 0, -1).reverse
-      competitors_in_run = redis.lrange(params[:run], 0, -1).map { |a| a.split(':')[0] }
-      @competitors = @all_competitors.reject { |k, _| competitors_in_run.include? k }
+  get '/runs_rank' do
+    slim :view
+  end
+
+  get '/rank_by_avg' do
+    @competitors_avg = {}
+    @all_competitors.each do |nb, infos|
+      avg_time = infos.map { |_, t| t['ts_time'] }.reject!(&:nil?)
+      avg_time -= ['crashed']
+      @competitors_avg[nb] = avg_time.sum(0.0) / avg_time.size
     end
-    redis.close
-    slim :runs
+    @competitors_avg = @competitors_avg.sort_by { |_, v| v}.to_h
+    slim :rank_by_avg
   end
 
-  post '/modify_run' do
-    redis = Redis.new
-    redis.lrem(params[:run].to_s, -1, params[:competitor].to_s) if params[:action] == 'remove_competitor'
-    redis.lpush(params[:run].to_s, params[:competitor].to_s) if params[:action] == 'add_competitor'
-    redis.close
-    redirect "/runs?run=#{params[:run]}"
-  end
-
-  get '/status_run' do
-    redis = Redis.new
-    all_status = redis.hgetall('runs')
-    already_started = all_status.select { |_, a| a == 'started' }
-    redis.hset('runs', params[:run], params[:status]) if params[:status] != 'started' || already_started.empty?
-    redis.close
-    redirect "/runs?run=#{params[:run]}"
-  end
-
-  post '/create_run' do
-    redis = Redis.new
-    redis.hset('runs', "run-#{params[:run_number]}", 'opened')
-    redis.close
-    redirect '/runs'
-  end
-
-  post '/delete_run' do
-    redis = Redis.new
-    redis.hdel('runs', params[:run_number])
-    redis.del(params[:run_number])
-    redis.hgetall('competitors').each do |competitor, infos|
-      competitor_infos = JSON.parse(infos)
-      competitor_infos = competitor_infos.except(params[:run_number])
-      redis.hmset('competitors', competitor, competitor_infos.to_json)
+  get '/rank_by_min' do
+    @competitors_min = {}
+    @all_competitors.each do |nb, infos|
+      min_time = infos.map { |_, t| t['ts_time'] }.reject!(&:nil?)
+      min_time -= ['crashed']
+      @competitors_min[nb] = min_time.min
     end
-    redis.close
-    redirect '/runs'
+    @competitors_min = @competitors_min.sort_by { |_, v| v}.to_h
+    slim :rank_by_min
   end
 
-  get '/competitors' do
-    slim :competitors
-  end
 
-  get '/competitor_runs' do
-    redirect '/competitors' if params[:competitor].nil?
-    redis = Redis.new
-    @competitor = JSON.parse(redis.hget('competitors', params[:competitor]))
-    redis.close
-    slim :competitor_runs
-  end
-
-  post '/competitor_modify_run' do
-    competitor = params['name']
-    competitor_run = {}
-    competitor_run['ts_start'] = params['ts_start'] if params['ts_start']
-    if params['ts_stop']
-      competitor_run['ts_stop'] = params['ts_stop'] == 'crashed' ? params['ts_stop'] : params['ts_stop'].to_i
-    end
-    if params['ts_time']
-      competitor_run['ts_time'] = params['ts_time'] == 'crashed' ? params['ts_time'] : params['ts_time'].to_i
-    end
-    redis = Redis.new
-    competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-    competitor_infos[params['run_name']] = competitor_run
-    redis.hmset('competitors', competitor, competitor_infos.to_json)
-    redis.close
-    redirect "/competitor_runs?competitor=#{competitor}"
-  end
-
-  post '/delete_competitor' do
-    redis = Redis.new
-    redis.hdel('competitors', params[:number].to_s)
-    redis.close
-    redirect '/competitors'
-  end
-
-  post '/update_competitor' do
-    redis = Redis.new
-    competitor_dump = JSON.parse(redis.hmget('competitors', params[:old_number]).first)
-    competitor_dump['name'] = params[:name]
-    redis.hdel('competitors', params[:old_number].to_s)
-    redis.hset('competitors', params[:number], competitor_dump.to_json)
-    redis.close
-    redirect '/competitors'
-  end
-
-  post '/create_competitor' do
-    if !params[:number].empty? && !params[:name].empty?
-      redis = Redis.new
-      if @all_competitors.key?(params[:number])
-        session[:message] = 'already exist'
-      else
-        redis.hmset('competitors', params[:number], { name: params[:name] }.to_json)
-        redis.close
-      end
-    else
-      session[:message] = 'not empty'
-    end
-    redirect '/competitors'
-  end
-
-  get '/events', provides: 'text/event-stream' do
-    stream(:keep_open) do |out|
-      connections << out
-      connections.reject!(&:closed?)
-    end
-  end
-
-  post '/competitor_start' do
-    return if @portals_status['start'] == 'closed' && params['mode'] == 'auto'
-
-    redis = Redis.new
-    run_len = redis.lrange(@run_in_progress, 0, -1).size
-    competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
-    competitor_inprogress_len = competitor_inprogress.size
-    if params[:ts] && run_len.positive? && competitor_inprogress_len < 2
-      competitor = redis.rpop(@run_in_progress)
-      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-      competitor_infos[@run_in_progress] = { ts_start: params[:ts] }
-      redis.hmset('competitors', competitor, competitor_infos.to_json)
-      redis.rpush('run:inprogress', competitor)
-    end
-    redis.hset('portals', 'start', 'closed') if params['mode'] == 'auto'
-    redis.close
-    connections.each do |out|
-      out << "data: #{params}\n\n"
-      out.close
-    end
-    ''
-  end
-
-  post '/competitor_stop' do
-    return if @portals_status['finish'] == 'closed' && params['mode'] == 'auto'
-
-    redis = Redis.new
-    competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
-    competitor_inprogress_len = competitor_inprogress.size
-    if params[:ts] && competitor_inprogress_len.positive?
-      competitor = redis.lpop('run:inprogress')
-      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-      competitor_infos[@run_in_progress].merge!({ ts_stop: params[:ts] })
-      competitor_infos[@run_in_progress].merge!(
-        { ts_time: (params[:ts].to_i - competitor_infos[@run_in_progress]['ts_start'].to_i) }
-      )
-      redis.hmset('competitors', competitor, competitor_infos.to_json)
-    end
-    redis.hset('portals', 'finish', 'closed') if params['mode'] == 'auto'
-    redis.close
-    connections.each do |out|
-      out << "data: #{params}\n\n"
-      out.close
-    end
-    ''
-  end
-
-  post '/competitor_crash' do
-    redis = Redis.new
-    competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
-    competitor_inprogress_len = competitor_inprogress.size
-    if params[:ts] && competitor_inprogress_len.positive?
-      case competitor_inprogress.index(params[:ts])
-      when 0
-        competitor = redis.lpop('run:inprogress')
-      when 1
-        competitor = redis.rpop('run:inprogress')
-      end
-
-      competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-      competitor_infos[@run_in_progress].merge!({ ts_stop: 'crashed' })
-      competitor_infos[@run_in_progress].merge!({ ts_time: 'crashed' })
-      redis.hmset('competitors', competitor, competitor_infos.to_json)
-    end
-    redis.close
-    connections.each do |out|
-      out << "data: #{params}\n\n"
-      out.close
-    end
-    ''
-  end
-
-  get '/push' do
-    connections.each do |out|
-      out << "data: #{params}\n\n"
-      out.close
-    end
-    ''
-  end
-
-  post '/portal_update_status' do
-    redis = Redis.new
-    redis.hset('portals', params[:portal_name], params[:portal_status])
-    redis.close
+  get '/disconnect' do
     redirect '/'
   end
+
+  # rubocop:disable Metrics/BlockLength
+  namespace '/admin' do
+    before do
+      protected!
+    end
+    get '/runs' do
+      @run, @competitors = AdminRun.runs(params, @all_competitors)
+      slim :runs
+    end
+
+    post '/modify_run' do
+      AdminRun.modify(params)
+      redirect "/admin/runs?run=#{params[:run]}"
+    end
+
+    get '/status_run' do
+      AdminRun.status(params)
+      redirect "/admin/runs?run=#{params[:run]}"
+    end
+
+    post '/create_run' do
+      AdminRun.create(params)
+      redirect '/admin/runs'
+    end
+
+    post '/delete_run' do
+      AdminRun.delete(params)
+      redirect '/admin/runs'
+    end
+
+    get '/competitors' do
+      slim :competitors
+    end
+
+    get '/competitor_runs' do
+      redirect '/admin/competitors' if params[:competitor].nil?
+      @competitor = AdminCompetitor.runs(params)
+      slim :competitor_runs
+    end
+
+    post '/competitor_modify_run' do
+      AdminCompetitor.modify_run(params)
+      redirect "/admin/competitor_runs?competitor=#{params[:name]}"
+    end
+
+    post '/delete_competitor' do
+      AdminCompetitor.delete(params)
+      redirect '/admin/competitors'
+    end
+
+    post '/update_competitor' do
+      AdminCompetitor.update(params)
+      redirect '/admin/competitors'
+    end
+
+    post '/create_competitor' do
+      session[:message] = AdminCompetitor.create(params, @all_competitors)
+      redirect '/admin/competitors'
+    end
+  end
+  # rubocop:enable Metrics/BlockLength
 
 end

@@ -19,11 +19,11 @@ table.uk-table.uk-table-striped
       td
         a.uk-button.uk-button-default.uk-background-primary uk-toggle="target: #modal-create_dir-#{number}" edit
         a.uk-button.uk-button-default.uk-button-danger.uk-background-secondary uk-toggle="target: #modal-delete_dir-#{number}" delete
-        a.uk-button.uk-button-default.uk-background-primary href="/competitor_runs?competitor=#{number}" manage runs
+        a.uk-button.uk-button-default.uk-background-primary href="/admin/competitor_runs?competitor=#{number}" manage runs
     .uk-modal id="modal-create_dir-#{number}" uk-modal=""
       .uk-modal-dialog.uk-modal-body
         h2.uk-modal-title = "Competitor"
-        form action="/update_competitor" method="POST"
+        form action="/admin/update_competitor" method="POST"
           input.uk-input.uk-form-small.uk-background-default type='number' name="number" value=number
           input.uk-input.uk-form-small.uk-background-default name="name" value=competitor['name']
           input hidden=true name="old_number" readonly=true value=number
@@ -31,16 +31,14 @@ table.uk-table.uk-table-striped
           input.button.uk-button.uk-button-default.uk-background-primary type="submit" value="Update"
     .uk-modal id="modal-delete_dir-#{number}" uk-modal=""
       .uk-modal-dialog.uk-modal-body
-        form action="/delete_competitor" method="POST"
+        form action="/admin/delete_competitor" method="POST"
           h2.uk-modal-title = "Are you sure you want to delete this competitor?"
           input.uk-input.uk-form-small.uk-form-blank name="name" readonly=true value=competitor['name']
           input.uk-input.uk-form-small.uk-form-blank name="number" readonly=true value=number
           button.uk-button.uk-button-default.uk-modal-close type="button" Cancel
           input.button.uk-button.uk-button-danger.uk-background-secondary type="submit" value="Remove"
-br
-br
 .uk-heading-small.uk-heading-divider Create competitor
-form action='/create_competitor' method='POST'
+form action='/admin/create_competitor' method='POST'
   .uk-margin
     label
       ="Name: "

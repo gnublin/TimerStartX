@@ -1,18 +1,24 @@
 // MIT License
 // Copyright (c) 2022 Gauthier FRANCOIS
 
+- if request.path == '/runs_rank'
+  - display = %w(archived started)
+- else
+  - display = %w(started)
 
 - @runs.to_a.reverse.to_h.each do |run_name, status|
-  - if %w(archived started).include?(status)
-    .uk-heading-small.uk-heading-divider ="Run #{run_name}"
+  - if display.include?(status)
+    .uk-heading-small.uk-heading-divider ="Descente N° #{run_name} - #{status}"
     table.uk-table.uk-table-striped
       tr
         th
-          ="Competitor #"
+          ="Numéro #"
         th
           ="Competitor name"
         th
           ="Competitor time"
+        th
+          ="Speed"
       - competitors = @all_competitors.select { |k, v| v.key? run_name}
       - competitors_crashed = competitors.select { |k, v| v[run_name]['ts_time'] == 'crashed'}
       - competitors = competitors.reject { |k, v| v[run_name]['ts_time'].nil? || v[run_name]['ts_time'] == 'crashed'}
@@ -35,3 +41,5 @@
                   - sec = "0#{time[:seconds]}".reverse[0,2].reverse
                   - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
                   = "#{min}m:#{sec}s:#{ms}ms"
+            td
+              = @race_distance

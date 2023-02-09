@@ -1,0 +1,4 @@
+htaccess:
+  logging: admin
+  password: admin
+race_distance: 1200

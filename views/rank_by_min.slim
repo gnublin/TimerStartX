@@ -1,0 +1,25 @@
+// MIT License
+// Copyright (c) 2022 Gauthier FRANCOIS
+
+.uk-heading-small.uk-heading-divider = "Meilleur temps"
+table.uk-table.uk-table-striped
+  tr
+    th
+      ="Numéro #"
+    th
+      ="Competitor name"
+    th
+      ="Competitor time"
+  - @competitors_min.each do |nb, min_time|
+    tr
+      td
+        ="##{nb}"
+      td
+        = @all_competitors[nb]['name']
+      td
+        - time = get_duration_hrs_and_mins(min_time)
+        - if time.is_a? Hash
+          - min = "0#{time[:minutes]}".reverse[0,2].reverse
+          - sec = "0#{time[:seconds]}".reverse[0,2].reverse
+          - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
+          = "#{min}m:#{sec}s:#{ms}ms"

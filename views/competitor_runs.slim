@@ -7,7 +7,7 @@ br/
 - @competitor.reject{ |a,_| a == 'name'}.each do |run, run_infos|
 
   h2.uk-modal-title #{run}
-  form action='competitor_modify_run' method='post'
+  form action='/admin/competitor_modify_run' method='post'
     input type="hidden" name='name' value="#{params[:competitor]}"
     input type="hidden" name='run_name' value="#{run}"
     =run_infos

@@ -6,25 +6,30 @@ html
   head
     title TimerStartX
     link href="/uikit/dist/css/uikit.min.css" rel='stylesheet' type='text/css'
-    link href="@fortawesome/fontawesome-free/css/all.css" rel='stylesheet' type='text/css'
+    link href="/@fortawesome/fontawesome-free/css/all.css" rel='stylesheet' type='text/css'
   body
-    nav.uk-navbar.uk-navbar-container.uk-margin-bottom.uk-padding
-      a.uk-navbar-item.uk-logo.uk-margin-large-right href='/' Home
+    nav.uk-navbar.uk-navbar-container.uk-padding uk-navbar=true
+      a.uk-navbar-item.uk-logo.uk-margin-large-right href='/' Accueil
       .uk-navbar-left
         ul.uk-navbar-nav
           li
-            a.uk-text-capitalize href="/" Home
+            a.uk-text-bold.uk-text-capitalize href="/runs_rank" descentes
           li
-            a.uk-text-capitalize href="/runs" Runs
-          li
-            a.uk-text-capitalize href="/competitors" Competitors
+            a.uk-text-bold.uk-text-capitalize href="#" Pilotes
+            div.uk-navbar-dropdown
+              ul.uk-nav.uk-navbar-dropdown-nav
+                li
+                  a.uk-text-bold.uk-text-capitalize href="/rank_by_min" Meilleur temps
+                li
+                  a.uk-text-bold.uk-text-capitalize href="/rank_by_avg" Meilleur moyenne
+
       .margin-left.uk-navbar-center
         - run_inprogress = @runs.select{ |_, status| status == 'started'}
         - if run_inprogress.empty?
           .uk-text No run in progress
         - else
           .uk-text ="Run in progress N°: #{run_inprogress.keys.first}"
-        table.uk-table
+        table.uk-table.uk-width-expand
           - 2.times.each_with_index do |run, nb|
               - if @runs_in[run].nil?
                 tr
@@ -39,40 +44,49 @@ html
                   td id="seconds-#{nb}" = "#{@runs_in[run][:ts][:seconds].to_i}"
                   td id="milliseconds-#{nb}" = "#{@runs_in[run][:ts][:milliseconds].to_i}"
                   td.uk-table-expand
-                    form method='POST' action='competitor_crash'
+                    form method='POST' action='/competitor_crash'
                       input type='hidden' name='ts' value=@runs_in[run][:name]
-                      input.uk-button.uk-button-link.uk-button-small type='submit' value='Crashed'
-
-      .margin-left.uk-navbar-right
-        ul.uk-list
-          li
-            a.uk-text-capitalize.uk-button.uk-button-secondary.uk-button-small  onclick="call_http('start')" Start
-          li
-            a.uk-text-capitalize.uk-button.uk-button-secondary.uk-button-small onclick="call_http('stop')" Stop
-        ul.uk-list
+                      input.uk-button.uk-button-small.uk-button-link type='submit' value='Crashed'
+    - if session[:admin_menu]
+      nav.uk-navbar.uk-navbar-container.uk-padding-small
+        .ul-navbar-left
+          ul.uk-navbar-nav  style="color:green;"
+            li
+              a.uk-text-capitalize href="/admin/runs" Runs
+            li
+              a.uk-text-capitalize href="/admin/competitors" Competitors
+      nav.uk-navbar.uk-navbar-container.uk-padding-small
+        .uk-navbar-center
           - %w(start finish).each do |portal_name|
             - @portals_status[portal_name] = 'closed' unless @portals_status.key? portal_name
-            li
-              form method='post' action='/portal_update_status'
-                input type='hidden' name='portal_name' value=portal_name
-                input type='hidden' id="sub-#{portal_name}" name='portal_status' value="#{@portals_status[portal_name] == 'closed' ? 'opened' : 'closed'}"
-                label.uk-form-label for="sub-#{portal_name}" #{portal_name.upcase} is&nbsp;
-                span.uk-label class="#{@portals_status[portal_name] == 'closed' ? 'uk-label-danger' : 'uk-label-success'}" #{@portals_status[portal_name]}
-                input.uk-text-capitalize.uk-button.uk-button-small class="#{@portals_status[portal_name] == 'closed' ? 'uk-button-success' : 'uk-button-danger'}" type='submit' id="sub-#{portal_name}" value="#{@portals_status[portal_name] == 'closed' ? 'open' : 'close'}"
+            form method='post' action='/portal_update_status'
+              input type='hidden' name='portal_name' value=portal_name
+              input type='hidden' id="sub-#{portal_name}" name='portal_status' value="#{@portals_status[portal_name] == 'closed' ? 'opened' : 'closed'}"
+              label.uk-form-label for="sub-#{portal_name}"
+                span.uk-label class="#{@portals_status[portal_name] == 'closed' ? 'uk-label-danger' : 'uk-label-success'}" #{portal_name.upcase} is #{@portals_status[portal_name]}
+              input.uk-text-capitalize.uk-button.uk-button-small class="#{@portals_status[portal_name] == 'closed' ? 'uk-button-success' : 'uk-button-danger'}" type='submit' id="sub-#{portal_name}" value="#{@portals_status[portal_name] == 'closed' ? 'open' : 'close'}"
+        .uk-navbar-left
+          a.uk-text-capitalize.uk-button.uk-button-primary.uk-button-small  onclick="call_http('start')" Start
+          a.uk-text-capitalize.uk-button.uk-button-secondary.uk-button-small onclick="call_http('stop')" Stop
+      - if @log_msg != ''
+        .uk-alert-primary.uk-text-center uk-alert='true'
+          a.uk-alert-close uk-close='true'
+          p.uk-text-bold = @log_msg
+
     .uk-container.uk-container-large.uk-position-relative uk-height-viewport="expand: true"
-        = @log_msg
         == yield
 
     .uk-container.uk-container-expand.uk-background-muted.uk-text-center.uk-container-small
         = "Gauthier FRANÇOIS"
-        a.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://github.com/gnublin/TimerStartX/issues" = "MIT License"
-        a.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://github.com/gnublin/TimerStartX/blob/master/LICENSE" = "Open issue"
+        a.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://github.com/gnublin/TimerStartX/blob/master/LICENSE" = "MIT License"
+        a.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://github.com/gnublin/TimerStartX/issues" = "Open issue"
         a.fab.fa-github.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://github.com/gnublin/TimerStartX/"
         a.fab.fa-linkedin-in.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://www.linkedin.com/in/gafrancois/"
         a.fab.fa-twitter.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom target="_blank" href="https://twitter.com/gnublin"
+        a.fa-sharp.fa-solid.fa-lock.uk-link-reset.uk-padding-small.uk-padding-remove-top.uk-padding-remove-bottom href="/admin/runs"
     script src="/uikit/dist/js/uikit.min.js" type="text/javascript"
     script src="/uikit/dist/js/uikit-icons.min.js" type="text/javascript"
-    script src="script.js" type="text/javascript"
-    script src="chrono0.js" type="text/javascript"
-    script src="chrono1.js" type="text/javascript"
-    script src="caller.js" type="text/javascript"
+    script src="/script.js" type="text/javascript"
+    script src="/chrono0.js" type="text/javascript"
+    script src="/chrono1.js" type="text/javascript"
+    script src="/caller.js" type="text/javascript"

@@ -4,27 +4,27 @@
 .uk-heading-small.uk-heading-divider Runs list
 - @runs.each do |name, status|
   - if status != 'archived'
-    a.link.uk-button.uk-button-default.uk-background-primary href="/runs?run=#{name}" =name
+    a.link.uk-button.uk-button-default.uk-background-primary href="/admin/runs?run=#{name}" =name
   -else
     a.uk-button.uk-button-default.uk-background-primary disabled="true" =name
 
   - if status == 'closed' || status == 'stopped'
-    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=opened" Open
-    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=started" Start
+    a.link.uk-button.uk-button-default.uk-background-muted href="/admin/status_run?run=#{name}&status=opened" Open
+    a.link.uk-button.uk-button-default.uk-background-muted href="/admin/status_run?run=#{name}&status=started" Start
   - if status == 'opened'
-    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=closed" Close
+    a.link.uk-button.uk-button-default.uk-background-muted href="/admin/status_run?run=#{name}&status=closed" Close
   - elsif status == 'started'
-    a.link.uk-button.uk-button-default.uk-background-muted href="/status_run?run=#{name}&status=stopped" Stop run
+    a.link.uk-button.uk-button-default.uk-background-muted href="/admin/status_run?run=#{name}&status=stopped" Stop run
   - elsif status == 'archived'
     a.link.uk-button.uk-button-default.uk-button-danger uk-toggle="target: #modal-unarchived-#{name}" unarchived
   - else
-    a.link.uk-button.uk-button-secondary href="/status_run?run=#{name}&status=archived" archived
+    a.link.uk-button.uk-button-secondary href="/admin/status_run?run=#{name}&status=archived" archived
   br
 
   .uk-modal id="modal-unarchived-#{name}" uk-modal=""
     .uk-modal-dialog.uk-modal-body
       h2.uk-modal-title = "Run"
-      form action="/status_run?run=#{name}&status=opened" method="get"
+      form action="/admin/status_run?run=#{name}&status=opened" method="get"
         = "Are you sure you would like to unarchived this run #{name}"
         br
         input.uk-input value=name name='run' readonly='true' hidden='true'
@@ -61,7 +61,7 @@
                 =@all_competitors[competitor]['name']
               td
                 - if @runs[params[:run]] == 'opened' || @runs[params[:run]] == 'started'
-                  form method='post'action='/modify_run'
+                  form method='post'action='/admin/modify_run'
                     input type='hidden' name='action' value='remove_competitor'
                     input type='hidden' name='run' value="#{params[:run]}"
                     input type='hidden' name='competitor' value="#{competitor}"
@@ -75,7 +75,7 @@
           - if competitor.key? params[:run]
             - next if competitor[params[:run]].key? 'ts_start'
           - if @runs[params[:run]] == 'opened' || @runs[params[:run]] == 'started'
-            form method='post'action='/modify_run'
+            form method='post'action='/admin/modify_run'
               input type='hidden' name='action' value='add_competitor'
               input type='hidden' name='run' value="#{params[:run]}"
               input type='hidden' name='competitor' value="#{number}"
@@ -90,7 +90,7 @@
       .uk-text ="#{number} - #{competitor['name']}"
 
 .uk-heading-small.uk-heading-divider Create run
-form action='/create_run' method='POST'
+form action='/admin/create_run' method='POST'
   label
     ="Run number: "
     input type='text' name='run_number'
@@ -105,7 +105,7 @@ form action='/create_run' method='POST'
     br
     .uk-modal id="modal-delete-run-#{name}" uk-modal=""
       .uk-modal-dialog.uk-modal-body
-        form action='/delete_run' method='POST'
+        form action='/admin/delete_run' method='POST'
           ="Are you sure you want to delete the run: #{name}"
           br
           input type='hidden' name='run_number' value=name
