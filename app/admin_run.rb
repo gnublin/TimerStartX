@@ -32,7 +32,7 @@ module AdminRun
 
   def self.create(params)
     redis = Redis.new
-    redis.hset('runs', "run-#{params[:run_number]}", 'opened')
+    redis.hset('runs', params[:run_number], 'opened')
     redis.close
   end
 

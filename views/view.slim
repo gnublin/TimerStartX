@@ -8,17 +8,17 @@
 
 - @runs.to_a.reverse.to_h.each do |run_name, status|
   - if display.include?(status)
-    .uk-heading-small.uk-heading-divider ="Descente N° #{run_name} - #{status}"
+    .uk-heading-small.uk-heading-divider.uk-text-small ="Descente N°#{run_name} - #{status == 'started' ? 'en cours' : ''}"
     table.uk-table.uk-table-striped
       tr
         th
-          ="Numéro #"
+          ="Dossard"
         th
-          ="Competitor name"
+          ="Pilote"
         th
-          ="Competitor time"
+          ="Temps"
         th
-          ="Speed"
+          ="Vitesse"
       - competitors = @all_competitors.select { |k, v| v.key? run_name}
       - competitors_crashed = competitors.select { |k, v| v[run_name]['ts_time'] == 'crashed'}
       - competitors = competitors.reject { |k, v| v[run_name]['ts_time'].nil? || v[run_name]['ts_time'] == 'crashed'}
@@ -28,7 +28,7 @@
         -if infos[run_name]
           tr
             td
-              ="##{number}"
+              ="N°#{number}"
             td
               =infos['name']
             td
@@ -42,4 +42,7 @@
                   - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
                   = "#{min}m:#{sec}s:#{ms}ms"
             td
-              = @race_distance
+              - if infos[run_name]['ts_time'] == 'crashed'
+                = 'Crashed'
+              - else
+                = "#{((@race_distance * 3600 / (infos[run_name]['ts_time'].to_i / 1000)) / 1000).round(1)} Km/h"

@@ -112,9 +112,9 @@ class TimerStartX < Sinatra::Application
     @all_competitors.each do |nb, infos|
       avg_time = infos.map { |_, t| t['ts_time'] }.reject!(&:nil?)
       avg_time -= ['crashed']
-      @competitors_avg[nb] = avg_time.sum(0.0) / avg_time.size
+      @competitors_avg[nb] = avg_time.sum(0.0) / avg_time.size unless avg_time.empty?
     end
-    @competitors_avg = @competitors_avg.sort_by { |_, v| v}.to_h
+    @competitors_avg = @competitors_avg.sort_by { |_, v| v }.to_h
     slim :rank_by_avg
   end
 
@@ -123,7 +123,7 @@ class TimerStartX < Sinatra::Application
     @all_competitors.each do |nb, infos|
       min_time = infos.map { |_, t| t['ts_time'] }.reject!(&:nil?)
       min_time -= ['crashed']
-      @competitors_min[nb] = min_time.min
+      @competitors_min[nb] = min_time.min unless min_time.empty?
     end
     @competitors_min = @competitors_min.sort_by { |_, v| v}.to_h
     slim :rank_by_min

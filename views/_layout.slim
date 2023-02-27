@@ -13,40 +13,40 @@ html
       .uk-navbar-left
         ul.uk-navbar-nav
           li
-            a.uk-text-bold.uk-text-capitalize href="/runs_rank" descentes
+            a.uk-text-bold.uk-text-capitalize href="/runs_rank" Résultats des descentes
           li
-            a.uk-text-bold.uk-text-capitalize href="#" Pilotes
+            a.uk-text-bold.uk-text-capitalize href="#" Classement des pilotes
             div.uk-navbar-dropdown
               ul.uk-nav.uk-navbar-dropdown-nav
                 li
                   a.uk-text-bold.uk-text-capitalize href="/rank_by_min" Meilleur temps
                 li
                   a.uk-text-bold.uk-text-capitalize href="/rank_by_avg" Meilleur moyenne
-
-      .margin-left.uk-navbar-center
-        - run_inprogress = @runs.select{ |_, status| status == 'started'}
-        - if run_inprogress.empty?
-          .uk-text No run in progress
-        - else
-          .uk-text ="Run in progress N°: #{run_inprogress.keys.first}"
-        table.uk-table.uk-width-expand
-          - 2.times.each_with_index do |run, nb|
-              - if @runs_in[run].nil?
-                tr
-                  td.uk-table-expand
-                  td id="minutes-#{nb}" = "00"
-                  td id="seconds-#{nb}" = "00"
-                  td id="milliseconds-#{nb}" = "000"
-              - else
-                tr
-                  td.uk-table-expand = "##{@runs_in[run][:name]} - #{@all_competitors[@runs_in[run][:name]]['name']} "
-                  td id="minutes-#{nb}" = "#{@runs_in[run][:ts][:minutes].to_i}"
-                  td id="seconds-#{nb}" = "#{@runs_in[run][:ts][:seconds].to_i}"
-                  td id="milliseconds-#{nb}" = "#{@runs_in[run][:ts][:milliseconds].to_i}"
-                  td.uk-table-expand
-                    form method='POST' action='/competitor_crash'
-                      input type='hidden' name='ts' value=@runs_in[run][:name]
-                      input.uk-button.uk-button-small.uk-button-link type='submit' value='Crashed'
+    nav.uk-navbar.uk-navbar-container
+      - run_inprogress = @runs.select{ |_, status| status == 'started'}
+      - if run_inprogress.empty?
+        .uk-text
+      - else
+        .uk-text ="Chronos en cours"
+    - 2.times.each_with_index do |run, nb|
+      nav.uk-navbar.uk-navbar-container
+        table
+          - if @runs_in[run].nil?
+            tr
+              td.uk-table-expand
+              td id="minutes-#{nb}" = "00"
+              td id="seconds-#{nb}" = "00"
+              td id="milliseconds-#{nb}" = "000"
+          - else
+            tr
+              td.uk-table-expand = "##{@runs_in[run][:name]} - #{@all_competitors[@runs_in[run][:name]]['name']} "
+              td id="minutes-#{nb}" = "#{@runs_in[run][:ts][:minutes].to_i}"
+              td id="seconds-#{nb}" = "#{@runs_in[run][:ts][:seconds].to_i}"
+              td id="milliseconds-#{nb}" = "#{@runs_in[run][:ts][:milliseconds].to_i}"
+              td.uk-table-expand
+                form method='POST' action='/competitor_crash'
+                  input type='hidden' name='ts' value=@runs_in[run][:name]
+                  input.uk-button.uk-button-small.uk-button-link type='submit' value='Crashed'    
     - if session[:admin_menu]
       nav.uk-navbar.uk-navbar-container.uk-padding-small
         .ul-navbar-left
