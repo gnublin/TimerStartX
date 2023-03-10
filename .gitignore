@@ -8,5 +8,6 @@
 .yardoc
 /doc
 
+/scripts
 curl.sh
 /node_modules
