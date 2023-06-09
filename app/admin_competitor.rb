@@ -20,6 +20,9 @@ module AdminCompetitor
     if params['ts_time']
       competitor_run['ts_time'] = params['ts_time'] == 'crashed' ? params['ts_time'] : params['ts_time'].to_i
     end
+    competitor_run['jump'] = params['jump'] if params['jump']
+    competitor_run['tune'] = params['tune'] if params['tune']
+
     redis = Redis.new
     competitor_infos = JSON.parse(redis.hget('competitors', params['name']))
     competitor_infos[params['run_name']] = competitor_run

@@ -36,11 +36,25 @@ post '/competitor_start' do
   if params[:ts] && run_len.positive? && competitor_inprogress_len < 2
     competitor = redis.rpop(@run_in_progress)
     competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-    competitor_infos[@run_in_progress] = { ts_start: params[:ts] }
+    competitor_infos[@run_in_progress] = { ts_start: params[:ts], obstacle_jump: false, obstacle_tune: false }
     redis.hmset('competitors', competitor, competitor_infos.to_json)
     redis.rpush('run:inprogress', competitor)
   end
   redis.hset('portals', 'start', 'closed') if params['mode'] == 'auto'
+  redis.close
+  connections.each do |out|
+    out << "data: #{params}\n\n"
+    out.close
+  end
+  ''
+end
+
+post '/obstacle' do
+  redis = Redis.new
+  competitor_infos = JSON.parse(redis.hget('competitors', params[:competitor_id]))
+  competitor_infos[params[:run_id]][params[:type]] = params[:state]
+  p competitor_infos
+  redis.hmset('competitors', params[:competitor_id], competitor_infos.to_json)
   redis.close
   connections.each do |out|
     out << "data: #{params}\n\n"

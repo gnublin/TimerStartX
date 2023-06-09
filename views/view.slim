@@ -18,7 +18,7 @@
         th
           ="Temps"
         th
-          ="Vitesse"
+          ="Vitesse moyenne"
       - competitors = @all_competitors.select { |k, v| v.key? run_name}
       - competitors_crashed = competitors.select { |k, v| v[run_name]['ts_time'] == 'crashed'}
       - competitors = competitors.reject { |k, v| v[run_name]['ts_time'].nil? || v[run_name]['ts_time'] == 'crashed'}

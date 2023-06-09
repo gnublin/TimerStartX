@@ -27,4 +27,21 @@ br/
       label ts_time :
       input type="#{run_infos['ts_time'] == 'crashed' ? 'text' : 'number' }'" name="ts_time" value="#{run_infos['ts_time']}"
     br
+    label Jump :
+    select.uk-select name='jump'
+      - if run_infos['jump'] == 'true'
+        option value="true" selected='selected' True
+        option value="false" False
+      - else
+        option value="false" selected='selected' False
+        option value="true" True
+    br
+    label Tune :
+    select.uk-select name='tune'
+      - if run_infos['tune'] == 'true'
+        option value="true" selected='selected' True
+        option value="false" False
+      - else
+        option value="false" selected='selected' False
+        option value="true" True
     input type='submit' value='Update run'
