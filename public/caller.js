@@ -1,3 +1,6 @@
+// MIT License
+// Copyright (c) 2022 Gauthier FRANCOIS
+
 const Http = new XMLHttpRequest();
 
 function call_http(ts_state) {
@@ -12,7 +15,7 @@ function call_http(ts_state) {
   Http.send(`ts=${tdate}`);
 }
 
-function stop_reverse(ts_state, reverse) {
+function stop_last(ts_state, last) {
   url = '/competitor_';
   url = url + ts_state;
   tdate = new Date().getTime();
@@ -21,7 +24,7 @@ function stop_reverse(ts_state, reverse) {
   Http.onreadystatechange = (e) => {
     console.log(Http.responseText)
   }
-  Http.send(`ts=${tdate}&reverse=${reverse}`);
+  Http.send(`ts=${tdate}&last=${last}`);
 }
 
 function call_obstacle(obtype, obstate, run_id, competior_id) {

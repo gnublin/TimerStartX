@@ -28,8 +28,11 @@ end
 
 post '/competitor_start' do
   return if @portals_status['start'] == 'closed' && params['mode'] == 'auto'
-
   redis = Redis.new
+  if redis.keys.select{|k| k.match /run:inprogress/}.empty?
+    redis.close
+    return 404
+  end
   run_len = redis.lrange(@run_in_progress, 0, -1).size
   competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
   competitor_inprogress_len = competitor_inprogress.size
@@ -70,7 +73,8 @@ post '/competitor_stop' do
   competitor_inprogress = redis.lrange('run:inprogress', 0, -1)
   competitor_inprogress_len = competitor_inprogress.size
   if params[:ts] && competitor_inprogress_len.positive?
-    competitor = redis.lpop('run:inprogress')
+    competitor = redis.lpop('run:inprogress') unless params[:last] == 'true'
+    competitor = redis.rpop('run:inprogress') if params[:last] == 'true'
     competitor_infos = JSON.parse(redis.hget('competitors', competitor))
     competitor_infos[@run_in_progress].merge!({ ts_stop: params[:ts] })
     competitor_infos[@run_in_progress].merge!(

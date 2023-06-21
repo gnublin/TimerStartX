@@ -16,7 +16,7 @@
         th
           ="Pilote"
         th
-          ="Temps"
+          ="Temps tremplin/tunnel"
         th
           ="Vitesse moyenne"
       - competitors = @all_competitors.select { |k, v| v.key? run_name}
@@ -35,12 +35,17 @@
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'
               - else
-                - time = get_duration_hrs_and_mins(infos[run_name]['ts_time'].to_i)
+                - time_with_penalty = infos[run_name]['ts_time'].to_i
+                - time_with_penalty = time_with_penalty + 5000 if infos[run_name]['jump'] != 'true'
+                - time_with_penalty = time_with_penalty + 5000 if infos[run_name]['tune'] != 'true'
+                - time = get_duration_hrs_and_mins(time_with_penalty)
                 - if time.is_a? Hash
                   - min = "0#{time[:minutes]}".reverse[0,2].reverse
                   - sec = "0#{time[:seconds]}".reverse[0,2].reverse
                   - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
                   = "#{min}m:#{sec}s:#{ms}ms"
+                  .uk-margin-large-left uk-icon="#{infos[run_name]['jump'] == 'true' ? 'check' : 'close'}"
+                  .uk-margin-large-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
             td
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'

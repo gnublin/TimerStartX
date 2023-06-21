@@ -10,3 +10,4 @@
 
 /scripts/ssh
 /node_modules
+/public/vote/*

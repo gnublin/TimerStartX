@@ -7,10 +7,13 @@ require 'redis'
 require 'json'
 require 'sinatra'
 require 'sinatra/base'
+require "sinatra/cookies"
 require 'sinatra/config_file'
 require 'sinatra/namespace'
 require 'slim'
 require 'puma'
+require 'fileutils'
+
 
 require_relative 'http_api'
 require_relative 'admin_competitor'
@@ -130,6 +133,30 @@ class TimerStartX < Sinatra::Application
     slim :rank_by_min
   end
 
+  get '/vote' do
+    @log_msg = 'Merci pour votre vote' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
+    @vote_error = params[:error] ? true : false
+    @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
+    @res_vote = {}
+    redis = Redis.new
+    get_vote_queues = redis.keys.select!{|a| a.match(/^vote-*/)}
+    get_vote_queues.each do |vote|
+      @res_vote[vote.split('-').last] = redis.get(vote)
+    end
+    redis.close
+    slim :vote
+  end
+
+  post '/vote' do
+    redirect '/vote' unless params[:id]
+    redirect '/vote' if cookies['L4D3sc3nt3DuM3nh1rV0t3']
+    redis = Redis.new
+    redis.incr "vote-#{params[:id]}"
+    redis.close
+    cookies[:L4D3sc3nt3DuM3nh1rV0t3] = true
+    session[:message] = 'Merci pour votre vote'
+    redirect '/vote'
+  end
 
   get '/disconnect' do
     redirect '/'
@@ -196,5 +223,4 @@ class TimerStartX < Sinatra::Application
     end
   end
   # rubocop:enable Metrics/BlockLength
-
 end
