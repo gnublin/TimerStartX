@@ -6,7 +6,7 @@
   div id='vote-grid' class='uk-margin uk-grid-small uk-child-width-1-3@s uk-flex-center uk-text-center uk-grid uk-height-match="target: > div > .uk-card"' uk-grid='true'
     - @all_competitors.each do |nb, competitor|
       div.uk-margin
-        img width="100px" src="/vote/#{nb}-#{competitor['name']}.jpg" alt="No image found"
+        img width="100px" src="#{@img[nb]}" alt="No image found"
           button.uk-button.uk-button-primary.uk-button-small.uk-align-center class="uk-card uk-card-default uk-card-body" disabled=request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] uk-toggle="target: #modal-vote-#{nb}" = "voter pour #{nb} - #{competitor['name']}"
           = "Nombre de vote : #{@res_vote[nb] || 0}"
       - unless request.cookies['L4D3sc3nt3DuM3nh1rV0t3']

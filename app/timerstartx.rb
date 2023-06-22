@@ -138,7 +138,12 @@ class TimerStartX < Sinatra::Application
     @vote_error = params[:error] ? true : false
     @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
     @res_vote = {}
+    @img = {}
     redis = Redis.new
+    @all_competitors.each do |nb, competitor|
+      @img[nb] = '/vote/default.jpg'
+      @img[nb] = "/vote/#{nb}-#{competitor['name']}.jpg" if File.exist?("#{settings.root}/vote/#{nb}-#{competitor['name']}.jpg")
+    end
     get_vote_queues = redis.keys.select!{|a| a.match(/^vote-*/)} || []
     get_vote_queues.each do |vote|
       @res_vote[vote.split('-').last] = redis.get(vote)
