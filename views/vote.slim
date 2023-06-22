@@ -7,9 +7,9 @@
     - @all_competitors.each do |nb, competitor|
       div.uk-padding
         img width="400px" src="#{@img[nb]}" alt="No image found"
-          button.uk-button.uk-button-primary.uk-button-small.uk-align-center class="uk-card uk-card-default uk-card-body" disabled=request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] uk-toggle="target: #modal-vote-#{nb}" = "voter pour #{nb} - #{competitor['name']}"
+          button.uk-button.uk-button-primary.uk-button-small.uk-align-center class="uk-card uk-card-default uk-card-body" disabled=(request.cookies['L4D3sc3nt3DuM3nh1rV0t3']||@vote_state =='close') uk-toggle="target: #modal-vote-#{nb}" = "voter pour #{nb} - #{competitor['name']}"
           = "Nombre de vote : #{@res_vote[nb] || 0}"
-      - unless request.cookies['L4D3sc3nt3DuM3nh1rV0t3']
+      - if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] != true && @vote_state == 'open'
         .uk-modal id="modal-vote-#{nb}" uk-modal=""
           .uk-modal-dialog.uk-modal-body
             h2.uk-modal-title = "Confirmer votre vote"
@@ -19,6 +19,6 @@
               input.button.uk-button.uk-button-default.uk-background-primary type="submit" value="Voter pour #{nb} - #{competitor['name']}"
 
 - else
-  .uk-alert-danger.uk-text-center uk-alert='true'
+  .uk-alert-danger.uk-text-center uk-alert='true' style="background-color:#72bbb1"
     a.uk-alert-close uk-close='true'
     p.uk-text-bold = "Il n'est pas possible de voter en navigation privée ou avec le JavaScript de désactivé"

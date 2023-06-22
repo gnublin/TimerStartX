@@ -90,6 +90,8 @@ html
               a.uk-text-capitalize href="/admin/runs" Runs
             li
               a.uk-text-capitalize href="/admin/competitors" Competitors
+            li
+              a.uk-text-capitalize href="/admin/vote" Vote
       nav.uk-navbar.uk-navbar-container.uk-padding-small
         .uk-navbar-center
           - %w(start finish).each do |portal_name|
@@ -105,7 +107,8 @@ html
           a.uk-text-capitalize.uk-button.uk-button-secondary.uk-button-small onclick="call_http('stop')" Stop
 
     - if @log_msg != ''
-      .uk-alert-primary.uk-text-center uk-alert='true'
+      br
+      .uk-alert-primary.uk-text-center.uk-text-secondary style="background-color:#72bbb1;"
         a.uk-alert-close uk-close='true'
         p.uk-text-bold = @log_msg
 

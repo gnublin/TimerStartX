@@ -57,6 +57,7 @@ class TimerStartX < Sinatra::Application
   before do
     redis = Redis.new
     @runs = redis.hgetall('runs')
+    @vote_state = redis.get('vote')
     competitors_inprogress = redis.lrange('run:inprogress', 0, -1)
     @penalty = settings.public_methods.include?(:penalty) ? settings.penalty : { jump: 0, tunnel: 0 }
     @race_distance = settings.public_methods.include?(:race_distance) ? settings.race_distance : 0
@@ -134,7 +135,8 @@ class TimerStartX < Sinatra::Application
   end
 
   get '/vote' do
-    @log_msg = 'Merci pour votre vote' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
+    @log_msg = 'Vous avez déjà voté. Merci !' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
+    @log_msg = "Les votes sont clos. Merci d'avoir participé" if @vote_state == 'close'
     @vote_error = params[:error] ? true : false
     @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
     @res_vote = {}
@@ -176,6 +178,21 @@ class TimerStartX < Sinatra::Application
     get '/runs' do
       @run, @competitors = AdminRun.runs(params, @all_competitors)
       slim :runs
+    end
+
+    get '/vote' do
+      slim :admin_vote
+    end
+
+    post '/vote' do
+      unless params['vote_action']
+        session[:message] = 'No vote_action provide has param'
+        redirect '/admin/'
+      end
+      redis = Redis.new
+      redis.set('vote', params['vote_action'])
+      redis.close
+      redirect '/admin/vote'
     end
 
     post '/modify_run' do
