@@ -1,0 +1,13 @@
+#!/bin/bash
+# MIT License
+# Copyright (c) 2022 Gauthier FRANCOIS
+
+export RACK_ENV=production
+
+# Mandatory for Ruby environment manager like RVM or RBENV
+source ~/.bashrc
+
+# Change home directory for Sinatra application
+export HOME=/var/www/TimerStartX
+
+bundle exec rackup -s thin -o 0.0.0.0

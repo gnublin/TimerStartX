@@ -139,10 +139,11 @@ class TimerStartX < Sinatra::Application
     @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
     @res_vote = {}
     redis = Redis.new
-    get_vote_queues = redis.keys.select!{|a| a.match(/^vote-*/)}
+    get_vote_queues = redis.keys.select!{|a| a.match(/^vote-*/)} || []
     get_vote_queues.each do |vote|
       @res_vote[vote.split('-').last] = redis.get(vote)
     end
+    session[:message] = 'Pas de votre disponible pour le moment' if get_vote_queues.empty?
     redis.close
     slim :vote
   end
