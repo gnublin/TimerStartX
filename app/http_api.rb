@@ -29,7 +29,7 @@ end
 post '/competitor_start' do
   return if @portals_status['start'] == 'closed' && params['mode'] == 'auto'
   redis = Redis.new
-  if redis.keys.select{|k| k.match /run:inprogress/}.empty?
+  if @run_in_progress.nil?
     redis.close
     return 404
   end
