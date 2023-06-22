@@ -12,8 +12,6 @@
     table.uk-table.uk-table-striped
       tr
         th
-          ="Dossard"
-        th
           ="Pilote"
         th
           ="Temps tremplin/tunnel"
@@ -28,9 +26,7 @@
         -if infos[run_name]
           tr
             td
-              ="N°#{number}"
-            td
-              =infos['name']
+              ="N°#{number} - #{infos['name']}"
             td
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'
