@@ -26,7 +26,8 @@
         -if infos[run_name]
           tr
             td
-              ="N°#{number} - #{infos['name']}"
+              ="N°#{number}"
+              =" #{infos['name']}"
             td
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'
@@ -40,8 +41,8 @@
                   - sec = "0#{time[:seconds]}".reverse[0,2].reverse
                   - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
                   = "#{min}m:#{sec}s:#{ms}ms"
-                  .uk-margin-large-left uk-icon="#{infos[run_name]['jump'] == 'true' ? 'check' : 'close'}"
-                  .uk-margin-large-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
+                  .uk-margin-small-left uk-icon="#{infos[run_name]['jump'] == 'true' ? 'check' : 'close'}"
+                  .uk-margin-small-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
             td
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'
