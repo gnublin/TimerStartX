@@ -45,7 +45,7 @@
             td
               - unless infos[run_name]['ts_time'] == 'crashed'
                 .uk-margin-small-left uk-icon="#{infos[run_name]['jump'] == 'true' ? 'check' : 'close'}"
-                .uk-margin-small-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
+                .uk-margin-medium-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
             td
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Crashed'
