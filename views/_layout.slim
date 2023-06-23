@@ -27,14 +27,14 @@ html
           li
             a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/vote" Voter
     - unless request.path_info == '/vote'
-      nav.uk-navbar.uk-navbar-container.uk-margin-left style="background-color:#72bbb1"
+      nav.uk-navbar.uk-navbar-container.uk-padding-small.uk-text-bolder style="background-color:#888888"
         - run_inprogress = @runs.select{ |_, status| status == 'started'}
         - if run_inprogress.empty?
           .uk-text
         - else
           .uk-text =" Descente #{run_inprogress.first.first} en cours"
       - 2.times.each_with_index do |run, nb|
-        nav.uk-navbar.uk-navbar-container.uk-margin-left
+        nav.uk-navbar.uk-navbar-container.uk-padding-small
           table
             - if @runs_in[run].nil?
               tr.uk-text-secondary
