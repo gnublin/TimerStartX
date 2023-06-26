@@ -26,6 +26,17 @@ get '/push' do
   ''
 end
 
+get '/admin/status_run' do
+  AdminRun.status(params)
+  if params[:status] == 'started' || params[:status] == 'stopped'
+    connections.each do |out|
+      out << "data: #{params}\n\n"
+      out.close
+    end
+  end
+  redirect "/admin/runs?run=#{params[:run]}"
+end
+
 post '/competitor_start' do
   return if @portals_status['start'] == 'closed' && params['mode'] == 'auto'
   redis = Redis.new
@@ -56,7 +67,6 @@ post '/obstacle' do
   redis = Redis.new
   competitor_infos = JSON.parse(redis.hget('competitors', params[:competitor_id]))
   competitor_infos[params[:run_id]][params[:type]] = params[:state]
-  p competitor_infos
   redis.hmset('competitors', params[:competitor_id], competitor_infos.to_json)
   redis.close
   connections.each do |out|
