@@ -201,11 +201,6 @@ class TimerStartX < Sinatra::Application
       redirect "/admin/runs?run=#{params[:run]}"
     end
 
-    get '/status_run' do
-      AdminRun.status(params)
-      redirect "/admin/runs?run=#{params[:run]}"
-    end
-
     post '/create_run' do
       AdminRun.create(params)
       redirect '/admin/runs'
