@@ -136,8 +136,8 @@ class TimerStartX < Sinatra::Application
   end
 
   get '/vote' do
-    @log_msg = 'Vous avez déjà voté. Merci !' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
-    @log_msg = "Les votes sont clos. Merci d'avoir participé" if @vote_state == 'close'
+    @vote_msg = 'Vous avez déjà voté. Merci !' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
+    @vote_msg = "Il n'est pas possible de voter" if @vote_state == 'close'
     @vote_error = params[:error] ? true : false
     @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
     @res_vote = {}
@@ -151,7 +151,7 @@ class TimerStartX < Sinatra::Application
     get_vote_queues.each do |vote|
       @res_vote[vote.split('-').last] = redis.get(vote)
     end
-    session[:message] = 'Pas de votre disponible pour le moment' if get_vote_queues.empty?
+    session[:message] = 'Pas de vote disponible pour le moment' if get_vote_queues.empty?
     redis.close
     slim :vote
   end

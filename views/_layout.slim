@@ -27,26 +27,28 @@ html
           li
             a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/vote" Voter
     - unless request.path_info == '/vote'
-      nav.uk-navbar.uk-navbar-container.uk-padding-small.uk-text-bolder style="background-color:#888888"
+      nav.uk-navbar.uk-navbar-container.uk-padding-large.uk-text-bolder.uk-padding-remove-bottom.uk-padding-remove-top style="background-color:#666; color:white;"
         - run_inprogress = @runs.select{ |_, status| status == 'started'}
         - if run_inprogress.empty?
-          .uk-text
+          .uk-text =" Pas de descente en cours..."
         - else
           .uk-text =" Descente #{run_inprogress.first.first} en cours"
       - 2.times.each_with_index do |run, nb|
         nav.uk-navbar.uk-navbar-container.uk-padding-small
           table
+            th Nom
+            th colspan='3' Temps
+            th Tremplin
+            th Tunel
             - if @runs_in[run].nil?
               tr.uk-text-secondary
                 td.uk-table-expand
                 td id="minutes-#{nb}" = "00"
                 td id="seconds-#{nb}" = "00"
                 td id="milliseconds-#{nb}" = "000"
+                td.uk-margin.uk-table-expand
+                td.uk-margin.uk-table-expand
             - else
-              th Nom
-              th colspan='3' Temps
-              th Tremplin
-              th Tunel
               tr.uk-text-secondary
                 td.uk-table-expand = "##{@runs_in[run][:name]} - #{@all_competitors[@runs_in[run][:name]]['name']} "
                 td id="minutes-#{nb}" = "#{@runs_in[run][:ts][:minutes].to_i}"
