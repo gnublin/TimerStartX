@@ -31,7 +31,7 @@
               ="N°#{number} #{infos['name']}"
             td
               - if infos[run_name]['ts_time'] == 'crashed'
-                = 'Crashed'
+                = 'Non terminée'
               - else
                 - time_with_penalty = infos[run_name]['ts_time'].to_i
                 - time_with_penalty = time_with_penalty + 5000 if infos[run_name]['jump'] != 'true'
@@ -47,7 +47,5 @@
                 .uk-margin-small-left uk-icon="#{infos[run_name]['jump'] == 'true' ? 'check' : 'close'}"
                 .uk-margin-medium-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
             td
-              - if infos[run_name]['ts_time'] == 'crashed'
-                = 'Crashed'
-              - else
+              - unless infos[run_name]['ts_time'] == 'crashed'
                 = "#{((@race_distance * 3600 / (infos[run_name]['ts_time'].to_i / 1000)) / 1000).round(1)} Km/h"

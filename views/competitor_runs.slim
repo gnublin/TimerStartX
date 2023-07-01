@@ -6,7 +6,7 @@ br/
 br/
 - @competitor.reject{ |a,_| a == 'name'}.each do |run, run_infos|
 
-  h2.uk-modal-title #{run}
+  h2.uk-modal-title Run N°#{run}
   form action='/admin/competitor_modify_run' method='post'
     input type="hidden" name='name' value="#{params[:competitor]}"
     input type="hidden" name='run_name' value="#{run}"
@@ -44,4 +44,14 @@ br/
       - else
         option value="false" selected='selected' False
         option value="true" True
-    input type='submit' value='Update run'
+    input.uk-button.uk-button-default.uk-button-secondary type='submit' value='Update run'
+
+    a.uk-button.uk-button-default.uk-button-danger uk-toggle="target: #delete-competitor-run-#{@competitor['name']}-#{run}" Delete
+  .uk-modal id="delete-competitor-run-#{@competitor['name']}-#{run}" uk-modal=""
+      .uk-modal-dialog.uk-modal-body
+        h2.uk-modal-title = "Delete run #{run} for #{@competitor['name']}"
+        form method='post' action='/admin/competitor_delete_run'
+          input type="hidden" name='name' value="#{params[:competitor]}"
+          input type="hidden" name='run_name' value="#{run}"
+          input.uk-button.uk-button-default.uk-button-danger type='submit' value='Delete'
+          button.uk-button.uk-button-default.uk-modal-close type="button" Cancel

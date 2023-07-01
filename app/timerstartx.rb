@@ -226,6 +226,11 @@ class TimerStartX < Sinatra::Application
       redirect "/admin/competitor_runs?competitor=#{params[:name]}"
     end
 
+    post '/competitor_delete_run' do
+      AdminCompetitor.delete_run(params)
+      redirect "/admin/competitor_runs?competitor=#{params[:name]}"
+    end
+
     post '/delete_competitor' do
       AdminCompetitor.delete(params)
       redirect '/admin/competitors'

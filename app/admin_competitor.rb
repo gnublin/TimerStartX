@@ -30,6 +30,15 @@ module AdminCompetitor
     redis.close
   end
 
+  def self.delete_run(params)
+    redis = Redis.new
+    competitor_infos = JSON.parse(redis.hget('competitors', params['name']))
+    competitor_infos.delete(params['run_name'])
+    # competitor_infos[params['run_name']] = competitor_run
+    redis.hmset('competitors', params['name'], competitor_infos.to_json)
+    redis.close
+  end
+
   def self.delete(params)
     redis = Redis.new
     redis.hdel('competitors', params[:number].to_s)
