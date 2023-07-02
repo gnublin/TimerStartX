@@ -34,8 +34,6 @@
                 = 'Non terminée'
               - else
                 - time_with_penalty = infos[run_name]['ts_time'].to_i
-                - time_with_penalty = time_with_penalty + 5000 if infos[run_name]['jump'] != 'true'
-                - time_with_penalty = time_with_penalty + 5000 if infos[run_name]['tune'] != 'true'
                 - time = get_duration_hrs_and_mins(time_with_penalty)
                 - if time.is_a? Hash
                   - min = "0#{time[:minutes]}".reverse[0,2].reverse
