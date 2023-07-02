@@ -145,7 +145,7 @@ class TimerStartX < Sinatra::Application
     redis = Redis.new
     @all_competitors.each do |nb, competitor|
       @img[nb] = '/vote/default.jpg'
-      @img[nb] = "/vote/#{nb}-#{competitor['name']}.jpg" if File.exist?("#{settings.root}/vote/#{nb}-#{competitor['name']}.jpg")
+      @img[nb] = "/vote/#{nb}.jpeg" if File.exist?("#{settings.root}/vote/#{nb}-#{competitor['name']}.jpg")
     end
     get_vote_queues = redis.keys.select!{|a| a.match(/^vote-*/)} || []
     get_vote_queues.each do |vote|
