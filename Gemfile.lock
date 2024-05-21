@@ -45,7 +45,8 @@ GEM
     redis-client (0.11.2)
       connection_pool
     regexp_parser (2.5.0)
-    rexml (3.2.5)
+    rexml (3.2.8)
+      strscan (>= 3.0.9)
     rubocop (1.36.0)
       json (~> 2.3)
       parallel (~> 1.10)
@@ -74,6 +75,7 @@ GEM
     slim (4.1.0)
       temple (>= 0.7.6, < 0.9)
       tilt (>= 2.0.6, < 2.1)
+    strscan (3.1.0)
     temple (0.8.2)
     thin (1.8.1)
       daemons (~> 1.0, >= 1.0.9)
