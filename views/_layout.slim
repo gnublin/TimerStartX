@@ -40,8 +40,6 @@ html
           table
             th Pilote
             th colspan='3' Temps
-            th Tremplin
-            th Tunnel
             - if @runs_in[run].nil?
               tr.uk-text-secondary
                 td.uk-table-expand
@@ -56,28 +54,6 @@ html
                 td id="minutes-#{nb}" = "#{@runs_in[run][:ts][:minutes].to_i}"
                 td id="seconds-#{nb}" = "#{@runs_in[run][:ts][:seconds].to_i}"
                 td id="milliseconds-#{nb}" = "#{@runs_in[run][:ts][:milliseconds].to_i}"
-                td.uk-margin.uk-table-expand
-                  - if @all_competitors[@runs_in[run][:name]][run_inprogress.first.first]['jump'] == 'true'
-                    - if session[:admin_menu]
-                      button.uk-button.uk-margin-left id='jump' onclick="call_obstacle('jump', false, #{run_inprogress.first.first}, #{@runs_in[run][:name]})" Jumped
-                    - else
-                      .uk-margin-large-left uk-icon="check"
-                  - else
-                    - if session[:admin_menu]
-                      button.uk-button.uk-margin-left id='jump' onclick="call_obstacle('jump', true, #{run_inprogress.first.first}, #{@runs_in[run][:name]})" Jump
-                    - else
-                      .uk-margin-large-left uk-icon="close"
-                td.uk-margin.uk-table-expand
-                  - if @all_competitors[@runs_in[run][:name]][run_inprogress.first.first]['tune'] == 'true'
-                    - if session[:admin_menu]
-                      button.uk-button.uk-margin-left id='tune' onclick="call_obstacle('tune', false, #{run_inprogress.first.first}, #{@runs_in[run][:name]})" Tuned
-                    - else
-                      .uk-margin-large-left uk-icon="check"
-                  - else
-                    - if session[:admin_menu]
-                      button.uk-button.uk-margin-left id='tune' onclick="call_obstacle('tune', true, #{run_inprogress.first.first}, #{@runs_in[run][:name]})" Tune
-                    - else
-                      .uk-margin-large-left uk-icon="close"
                 td
                   - if session[:admin_menu]
                     form method='POST' action='/competitor_crash'
