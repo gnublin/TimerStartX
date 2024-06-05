@@ -17,16 +17,18 @@ html
           li
             a.uk-text-bolder.uk-text-capitalize.uk-text-secondary href="/runs_rank" Résultats des descentes
           li
-            a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="#" Classement des pilotes
-            div.uk-navbar-dropdown style="background-color:#72bbb1"
-              ul.uk-nav.uk-navbar-dropdown-nav
-                li
-                  a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/rank_by_min" Meilleur temps
-                li
-                  a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/rank_by_avg" Meilleur moyenne
+            a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/results" Classement des pilotes
           li
             a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/vote" Voter
-    - unless request.path_info == '/vote'
+          li
+            a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="#" Archives
+            div.uk-navbar-dropdown style="background-color:#72bbb1"
+              ul.uk-nav.uk-navbar-dropdown-nav
+                - @all_archives.each do |year|
+                  li
+                    a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/archives?year=#{year}" Archive #{year}
+
+    - unless ["/vote", "/archives"].include? request.path_info
       nav.uk-navbar.uk-navbar-container.uk-padding-large.uk-text-bolder.uk-padding-remove-bottom.uk-padding-remove-top style="background-color:#666; color:white;"
         - run_inprogress = @runs.select{ |_, status| status == 'started'}
         - if run_inprogress.empty?
@@ -94,6 +96,8 @@ html
               a.uk-text-capitalize href="/admin/competitors" Competitors
             li
               a.uk-text-capitalize href="/admin/vote" Vote
+            li
+              a.uk-text-capitalize href="/admin/archives" Archives
       nav.uk-navbar.uk-navbar-container.uk-padding-small
         .uk-navbar-center
           - %w(start finish).each do |portal_name|

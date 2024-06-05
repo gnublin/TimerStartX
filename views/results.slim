@@ -1,0 +1,52 @@
+// MIT License
+// Copyright (c) 2022 Gauthier FRANCOIS
+
+.uk-heading-small.uk-heading-divider = @results_title
+br
+table.uk-table.uk-table-striped style="background-color:#72bbb1"
+  caption
+    . class="uk-text-lead" Temps moyens (calculé sur la moyenne des 3 meilleures descentes)
+  tr
+    th
+      ="Numéro #"
+    th
+      ="Pilote"
+    th
+      ="Temps"
+  - @year_competitors_avg.each do |nb, avg_time|
+    tr
+      td
+        ="##{nb}"
+      td
+        = @all_competitors[nb]['name']
+      td
+        - time = get_duration_hrs_and_mins(avg_time)
+        - if time.is_a? Hash
+          - min = "0#{time[:minutes]}".reverse[0,2].reverse
+          - sec = "0#{time[:seconds]}".reverse[0,2].reverse
+          - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
+          = "#{min}m:#{sec}s:#{ms}ms"
+br
+table.uk-table.uk-table-striped style="background-color:#72bbb1"
+  caption
+    . class="uk-text-lead" Meilleur temps
+  tr
+    th
+      ="Numéro #"
+    th
+      ="Pilote"
+    th
+      ="Temps"
+  - @year_competitors_min.each do |nb, min_time|
+    tr
+      td
+        ="##{nb}"
+      td
+        = @year_all_competitors[nb]['name']
+      td
+        - time = get_duration_hrs_and_mins(min_time)
+        - if time.is_a? Hash
+          - min = "0#{time[:minutes]}".reverse[0,2].reverse
+          - sec = "0#{time[:seconds]}".reverse[0,2].reverse
+          - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
+          = "#{min}m:#{sec}s:#{ms}ms"

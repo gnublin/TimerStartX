@@ -46,4 +46,7 @@
                 .uk-margin-medium-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
             td
               - unless infos[run_name]['ts_time'] == 'crashed'
-                = "#{((@race_distance * 3600 / (infos[run_name]['ts_time'].to_i / 1000)) / 1000).round(1)} Km/h"
+                - if (infos[run_name]['ts_time'].to_i/1000) < 0.1
+                  = "N/A"
+                - else
+                  = "#{((@race_distance * 3600 / (infos[run_name]['ts_time'].to_i / 1000)) / 1000).round(1)} Km/h"
