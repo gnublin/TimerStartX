@@ -18,7 +18,7 @@ table.uk-table.uk-table-striped style="background-color:#72bbb1"
       td
         ="##{nb}"
       td
-        = @all_competitors[nb]['name']
+        = @year_all_competitors[nb]['name']
       td
         - time = get_duration_hrs_and_mins(avg_time)
         - if time.is_a? Hash
