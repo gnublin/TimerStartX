@@ -2,6 +2,3 @@ htaccess:
   logging: admin
   password: admin
 race_distance: 1200
-penalty:
-  jump: 5
-  tunnel: 5

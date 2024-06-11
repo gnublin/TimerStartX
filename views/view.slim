@@ -16,8 +16,6 @@
         th
           ="Temps"
         th
-          ="Tremplin/tunnel"
-        th
           ="Vitesse"
       - competitors = @all_competitors.select { |k, v| v.key? run_name}
       - competitors_crashed = competitors.select { |k, v| v[run_name]['ts_time'] == 'crashed'}
@@ -33,17 +31,13 @@
               - if infos[run_name]['ts_time'] == 'crashed'
                 = 'Non terminée'
               - else
-                - time_with_penalty = infos[run_name]['ts_time'].to_i
-                - time = get_duration_hrs_and_mins(time_with_penalty)
+                - time_ms = infos[run_name]['ts_time'].to_i
+                - time = get_duration_hrs_and_mins(time_ms)
                 - if time.is_a? Hash
                   - min = "0#{time[:minutes]}".reverse[0,2].reverse
                   - sec = "0#{time[:seconds]}".reverse[0,2].reverse
                   - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
                   = "#{min}m:#{sec}s:#{ms}ms"
-            td
-              - unless infos[run_name]['ts_time'] == 'crashed'
-                .uk-margin-small-left uk-icon="#{infos[run_name]['jump'] == 'true' ? 'check' : 'close'}"
-                .uk-margin-medium-left uk-icon="#{infos[run_name]['tune'] == 'true' ? 'check' : 'close'}"
             td
               - unless infos[run_name]['ts_time'] == 'crashed'
                 - if (infos[run_name]['ts_time'].to_i/1000) < 0.1

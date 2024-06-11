@@ -60,7 +60,6 @@ class TimerStartX < Sinatra::Application
     @vote_state = redis.get('vote')
     redis.set('vote','close') unless @vote_state
     competitors_inprogress = redis.lrange('run:inprogress', 0, -1)
-    @penalty = settings.public_methods.include?(:penalty) ? settings.penalty : { jump: 0, tunnel: 0 }
     @race_distance = settings.public_methods.include?(:race_distance) ? settings.race_distance : 0
     @run_in_progress = @runs.select { |_, status| status == 'started' }.keys.first
     @runs_in = {}

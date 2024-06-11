@@ -50,7 +50,7 @@ post '/competitor_start' do
   if params[:ts] && run_len.positive? && competitor_inprogress_len < 2
     competitor = redis.rpop(@run_in_progress)
     competitor_infos = JSON.parse(redis.hget('competitors', competitor))
-    competitor_infos[@run_in_progress] = { ts_start: params[:ts], obstacle_jump: false, obstacle_tune: false }
+    competitor_infos[@run_in_progress] = { ts_start: params[:ts]}
     redis.hmset('competitors', competitor, competitor_infos.to_json)
     redis.rpush('run:inprogress', competitor)
   end
