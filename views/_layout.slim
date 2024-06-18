@@ -9,24 +9,24 @@ html
     link rel="icon" href="/chrono.svg"
     link href="/uikit/dist/css/uikit.min.css" rel='stylesheet' type='text/css'
     link href="/@fortawesome/fontawesome-free/css/all.css" rel='stylesheet' type='text/css'
-  body.uk-text-secondary
-    nav.uk-navbar.uk-navbar-container.uk-padding uk-navbar=true style="background-color:#72bbb1"
-      a.uk-navbar-item.uk-logo.uk-margin-large-right.uk-text-secondary href='/' Accueil
+  body
+    nav.uk-navbar.uk-navbar-container.uk-padding uk-navbar=true style="background-color:#1b65e8; color:white;"
+      a.uk-navbar-item.uk-logo.uk-margin-large-right.uk-link-reset href='/' Accueil 
       .uk-navbar-left
         ul.uk-navbar-nav
           li
-            a.uk-text-bolder.uk-text-capitalize.uk-text-secondary href="/runs_rank" Résultats des descentes
+            a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/runs_rank" Résultats des descentes
           li
-            a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/results" Classement des pilotes
+            a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/results" Classement des pilotes
           li
-            a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/vote" Voter
+            a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/vote" Voter
           li
-            a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="#" Archives
-            div.uk-navbar-dropdown style="background-color:#72bbb1"
+            a.uk-text-bold.uk-text-capitalize.uk-link-reset href="#" Archives
+            div.uk-navbar-dropdown style="background-color:#1b65e8; color:white;"
               ul.uk-nav.uk-navbar-dropdown-nav
                 - @all_archives.each do |year|
                   li
-                    a.uk-text-bold.uk-text-capitalize.uk-text-secondary href="/archives?year=#{year}" Archive #{year}
+                    a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/archives?year=#{year}" Archive #{year}
 
     - unless ["/vote", "/archives"].include? request.path_info
       nav.uk-navbar.uk-navbar-container.uk-padding-large.uk-text-bolder.uk-padding-remove-bottom.uk-padding-remove-top style="background-color:#666; color:white;"
