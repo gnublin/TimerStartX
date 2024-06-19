@@ -3,15 +3,15 @@
 host_name=`hostname`
 nu=${#host_name}
 
-already=`ps faux | grep "[ssh] -R" | grep -v SCREEN | wc -l`
-
-process=`ps -ef | grep -v grep | grep SCREEN`
-screen_pid=$(echo $process | awk '{print $2}')
-
-already=${#process}
 
 while true
 do
+  already=`ps faux | grep "[ssh] -R" | grep -v SCREEN | wc -l`
+  
+  process=`ps -ef | grep -v grep | grep SCREEN`
+  screen_pid=$(echo $process | awk '{print $2}')
+  
+  already=${#process}
   if [ $already -ge 1 ]
   then
     echo "$(date) - already monted - pid $screen_pid"
@@ -20,3 +20,4 @@ do
   fi
   sleep 10
 done
+
