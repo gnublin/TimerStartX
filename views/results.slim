@@ -1,11 +1,10 @@
 // MIT License
 // Copyright (c) 2022 Gauthier FRANCOIS
 
-.uk-heading-small.uk-heading-divider = @results_title
-br
-table.uk-table.uk-table-striped.uk-table-condensed.uk-text-lead style="background-color:#1b65e8"
+.uk-heading-small.uk-heading-divider.uk-text-large.uk-text-bold  = @results_title
+table.uk-table.uk-table-striped.uk-table-condensed.uk-text-lead.uk-text-default style="background-color:#1b65e8"
   caption
-    . class="uk-text-lead" Temps moyens (calculé sur la moyenne des 3 meilleures descentes)
+    .uk-text-lead.uk-text-default.uk-text-bold Temps moyens (calculé sur la moyenne des 3 meilleures descentes)
   tr
     th
       ="Numéro #"
@@ -27,9 +26,9 @@ table.uk-table.uk-table-striped.uk-table-condensed.uk-text-lead style="backgroun
           - ms = "00#{time[:milliseconds]}".reverse[0,3].reverse
           = "#{min}m:#{sec}s:#{ms}ms"
 br
-table.uk-table.uk-table-striped.uk-table-condensed.uk-text-lead style="background-color:#1b65e8"
+table.uk-table.uk-table-striped.uk-table-condensed.uk-text-lead.uk-text-default style="background-color:#1b65e8"
   caption
-    . class="uk-text-lead" Meilleur temps
+    .uk-text-lead.uk-text-default.uk-text-bold Meilleur temps
   tr
     th
       ="Numéro #"
