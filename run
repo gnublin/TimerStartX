@@ -4,8 +4,8 @@
 
 export RACK_ENV=production
 
-# Mandatory for Ruby environment manager like RVM or RBENV
-source ~/.bashrc
+# Mandatory for Ruby environment manager rbenv
+export PATH="/var/www/.rbenv/shims/:${PATH}"
 
 # Change home directory for Sinatra application
 export HOME=/var/www/TimerStartX
