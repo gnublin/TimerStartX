@@ -11,13 +11,13 @@ html
     link href="/@fortawesome/fontawesome-free/css/all.css" rel='stylesheet' type='text/css'
   body
     nav.uk-navbar.uk-navbar-container.uk-padding uk-navbar=true style="background-color:#1b65e8; color:white;"
-      a.uk-navbar-item.uk-logo.uk-margin-large-right.uk-link-reset href='/' Accueil 
+      a.uk-navbar-item.uk-logo.uk-margin-large-right.uk-link-reset href='/' Accueil
       .uk-navbar-left
         ul.uk-navbar-nav
           li
-            a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/runs_rank" Résultats des descentes
+            a.uk-text-bold.uk-text-capitalize.uk-link-toggle href="/runs_rank" Descentes
           li
-            a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/results" Classement des pilotes
+            a.uk-text-bold.uk-text-capitalize.uk-link-toggle href="/results" Classement
           li
             a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/vote" Voter
           li
@@ -29,19 +29,21 @@ html
                     a.uk-text-bold.uk-text-capitalize.uk-link-reset href="/archives?year=#{year}" Archive #{year}
 
     - unless ["/vote", "/archives"].include? request.path_info
-      nav.uk-navbar.uk-navbar-container.uk-padding-large.uk-text-bolder.uk-padding-remove-bottom.uk-padding-remove-top style="background-color:#666; color:white;"
+      nav.uk-navbar.uk-navbar-container.uk-padding-large.uk-text-bolder.uk-padding-remove-bottom.uk-padding-remove-top style="background-color:#1b65e8; color:white;"
         - run_inprogress = @runs.select{ |_, status| status == 'started'}
         - if run_inprogress.empty?
           .uk-text =" Pas de descente en cours..."
         - else
           .uk-text =" Descente #{run_inprogress.first.first} en cours"
-      - 2.times.each_with_index do |run, nb|
-        nav.uk-navbar.uk-navbar-container.uk-padding-small
-          table
-            th Pilote
-            th colspan='3' Temps
+      nav.uk-navbar.uk-navbar-container.uk-padding-small
+        table
+          th N°
+          th Pilote
+          th colspan='3' Temps
+          - 2.times.each_with_index do |run, nb|
             - if @runs_in[run].nil?
               tr.uk-text-secondary
+                td.uk-table-expand
                 td.uk-table-expand
                 td id="minutes-#{nb}" = "00"
                 td id="seconds-#{nb}" = "00"
@@ -50,18 +52,19 @@ html
                 td.uk-margin.uk-table-expand
             - else
               tr.uk-text-secondary
-                td.uk-table-expand = "##{@runs_in[run][:name]} - #{@all_competitors[@runs_in[run][:name]]['name']} "
+                td =" ##{@runs_in[run][:name]}"
+                td.uk-table-expand = "#{@all_competitors[@runs_in[run][:name]]['name']} "
                 td id="minutes-#{nb}" = "#{@runs_in[run][:ts][:minutes].to_i}"
                 td id="seconds-#{nb}" = "#{@runs_in[run][:ts][:seconds].to_i}"
                 td id="milliseconds-#{nb}" = "#{@runs_in[run][:ts][:milliseconds].to_i}"
-                td
-                  - if session[:admin_menu]
-                    form method='POST' action='/competitor_crash'
-                      input type='hidden' name='ts' value=@runs_in[run][:name]
-                      input.uk-button type='submit' value='Crashed'
-                    - if nb == 1
-                      button.uk-button.uk-button-secondary.uk-button-small onclick="stop_last('stop', true)" Stop
-
+                - if session[:admin_menu]
+                  td.uk-table-expand
+                    .uk-navbar-center
+                      form method='POST' action='/competitor_crash'
+                        input type='hidden' name='ts' value=@runs_in[run][:name]
+                        input.uk-button.uk-button-secondary.uk-button-small type='submit' value='Crashed'
+                      - if nb == 1
+                        button.uk-button.uk-button-danger.uk-button-small onclick="stop_last('stop', true)" Stop
     - if session[:admin_menu]
       nav.uk-navbar.uk-navbar-container.uk-padding-small
         .ul-navbar-left

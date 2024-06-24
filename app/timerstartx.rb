@@ -115,7 +115,7 @@ class TimerStartX < Sinatra::Application
 
   get '/vote' do
     @vote_msg = 'Vous avez déjà voté. Merci !' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
-    @vote_msg = "Il n'est pas possible de voter" if @vote_state == 'close'
+    @vote_msg = "Les votes ne sont pas encore ouvert" if @vote_state == 'close'
     @vote_error = params[:error] ? true : false
     @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
     @res_vote = {}

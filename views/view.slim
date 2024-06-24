@@ -8,8 +8,8 @@
 
 - @runs.to_a.reverse.to_h.each do |run_name, status|
   - if display.include?(status)
-    .uk-heading-small.uk-heading-divider.uk-text-small ="Descente N°#{run_name} - #{status == 'started' ? 'en cours' : 'terminée'}"
-    table.uk-table.uk-table-striped style="background-color:#72bbb1"
+    .uk-text-lead.uk-text-default.uk-text-bold ="Descente N°#{run_name} - #{status == 'started' ? 'en cours' : 'terminée'}"
+    table.uk-table.uk-table-striped.uk-text-lead.uk-text-default	 style="background-color:#1b65e8"
       tr
         th
           ="Pilote"
