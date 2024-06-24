@@ -56,6 +56,12 @@ class TimerStartX < Sinatra::Application
 
   before do
     redis = Redis.new
+    redis_session = settings.public_methods.include?(:redis_session) ? settings.redis_session : false
+    if redis_session
+      redis_session = Redis.new(db: 2)
+      redis_session.incr("session:#{session.id.to_s}")
+      redis_session.close
+    end
     @runs = redis.hgetall('runs')
     @vote_state = redis.get('vote')
     redis.set('vote','close') unless @vote_state
@@ -106,6 +112,7 @@ class TimerStartX < Sinatra::Application
   end
 
   get '/' do
+
     slim :view
   end
 
