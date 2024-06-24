@@ -11,3 +11,4 @@
 /scripts/ssh
 /node_modules
 /public/vote/*
+/config/production.yml
