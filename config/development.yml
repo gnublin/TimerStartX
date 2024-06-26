@@ -1,5 +1,6 @@
 htaccess:
   logging: admin
   password: admin
-race_distance: 1200
-redis_session: false
+race_distance: 1100
+redis_session: true
+secret_session: MySessionSecret

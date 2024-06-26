@@ -93,6 +93,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport
   binding_of_caller
+  bundler
   json
   pry
   pry-byebug

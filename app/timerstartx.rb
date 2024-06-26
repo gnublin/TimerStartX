@@ -53,13 +53,15 @@ class TimerStartX < Sinatra::Application
   raise "config file #{config_file_name} missing" unless File.exist? config_file_name
 
   config_file config_file_name
+  set :session_secret, settings.secret_session
 
   before do
     redis = Redis.new
     redis_session = settings.public_methods.include?(:redis_session) ? settings.redis_session : false
-    if redis_session
+    if redis_session && !authenticated? && request.path_info != "/events"
       redis_session = Redis.new(db: 2)
       redis_session.incr("session:#{session.id.to_s}")
+      redis_session.set("count:#{session.id.to_s}", 1, ex: 30)
       redis_session.close
     end
     @runs = redis.hgetall('runs')
@@ -122,7 +124,7 @@ class TimerStartX < Sinatra::Application
 
   get '/vote' do
     @vote_msg = 'Vous avez déjà voté. Merci !' if request.cookies['L4D3sc3nt3DuM3nh1rV0t3'] == 'true'
-    @vote_msg = "Les votes ne sont pas encore ouvert" if @vote_state == 'close'
+    @vote_msg = "Il n'est pas possible de voter" if @vote_state == 'close'
     @vote_error = params[:error] ? true : false
     @vote_base_dir = "#{File.dirname(__FILE__)}/vote/"
     @res_vote = {}
@@ -146,6 +148,7 @@ class TimerStartX < Sinatra::Application
     redirect '/vote' if cookies['L4D3sc3nt3DuM3nh1rV0t3']
     redis = Redis.new
     redis.incr "vote-#{params[:id]}"
+    redis.incr("vote:total")
     redis.close
     cookies[:L4D3sc3nt3DuM3nh1rV0t3] = true
     session[:message] = 'Merci pour votre vote'
@@ -197,8 +200,17 @@ class TimerStartX < Sinatra::Application
       slim :runs
     end
 
-    get '/vote' do
-      slim :admin_vote
+    get '/tools' do
+      redis = Redis.new
+      @total_vote = redis.get('vote:total')
+      redis.close
+      redis = Redis.new(db: 2)
+      total_session_active = redis.keys.select!{|a| a.match(/^count:*/)}|| []
+      @total_session_active = total_session_active.size
+      total_session = redis.keys.select!{|a| a.match(/^session:*/)}|| []
+      @total_session = total_session.size
+      redis.close
+      slim :admin_tools
     end
 
     post '/vote' do

@@ -1,5 +1,15 @@
-.uk-heading-small.uk-heading-divider = "Vote admin"
+.uk-heading-small.uk-heading-divider = "Tools"
 form method='POST' action='/admin/vote'
   label.uk-form-label.uk-margin-large-right ="Les votes sont #{@vote_state.upcase}"
   input type='hidden' name='vote_action' value="#{@vote_state == 'close' ? 'open' : 'close'}"
   input.uk-text-capitalize.uk-button.uk-button-small class="#{@vote_state == 'close' ? 'uk-button-success' : 'uk-button-danger'}" type='submit' value="#{@vote_state == 'close' ? 'open' : 'close'}"
+br
+
+.uk-heading-small.uk-heading-divider = "Stats"
+table.uk-table.uk-table-condensed.uk-text-lead.uk-text-default
+  tr
+    td = "Nombre d'utilisateur unique active (30s)"
+    td = "#{@total_session_active}"
+  tr
+    td = "Nombre d'utilisateur unique total"
+    td = "#{@total_session}"
