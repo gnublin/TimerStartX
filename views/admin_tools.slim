@@ -10,6 +10,7 @@ table.uk-table.uk-table-condensed.uk-text-lead.uk-text-default
   tr
     td = "Nombre d'utilisateur unique active (30s)"
     td = "#{@total_session_active}"
-  tr
-    td = "Nombre d'utilisateur unique total"
-    td = "#{@total_session}"
+  - @total_session.each do |s_date, s_ids|
+    tr
+      td = "Nombre d'utilisateur unique #{s_date}"
+      td = "#{s_ids.size}"

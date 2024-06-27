@@ -59,8 +59,9 @@ class TimerStartX < Sinatra::Application
     redis = Redis.new
     redis_session = settings.public_methods.include?(:redis_session) ? settings.redis_session : false
     if redis_session && !authenticated? && request.path_info != "/events"
+      redis_time = Time.now.strftime('%Y-%m-%d %Hh')
       redis_session = Redis.new(db: 2)
-      redis_session.incr("session:#{session.id.to_s}")
+      redis_session.hsetnx("session:#{redis_time}", session.id.to_s, 1)
       redis_session.set("count:#{session.id.to_s}", 1, ex: 30)
       redis_session.close
     end
@@ -201,15 +202,20 @@ class TimerStartX < Sinatra::Application
     end
 
     get '/tools' do
+      @total_session = {}
+      
       redis = Redis.new
       @total_vote = redis.get('vote:total')
       redis.close
-      redis = Redis.new(db: 2)
-      total_session_active = redis.keys.select!{|a| a.match(/^count:*/)}|| []
+      redis_session = Redis.new(db: 2)
+      total_session_active = redis_session.keys.select{|a| a.match(/^count:*/)} || []
       @total_session_active = total_session_active.size
-      total_session = redis.keys.select!{|a| a.match(/^session:*/)}|| []
-      @total_session = total_session.size
-      redis.close
+
+      redis_session.keys.select{|a| a.match(/^session.*/)}.each do |sess|
+        _, s_date = sess.split(':')
+        @total_session[s_date] = hm_getall(redis_session, sess).keys
+      end
+      redis_session.close
       slim :admin_tools
     end
 
