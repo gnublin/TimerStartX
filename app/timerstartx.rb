@@ -227,7 +227,7 @@ class TimerStartX < Sinatra::Application
       redis = Redis.new
       redis.set('vote', params['vote_action'])
       redis.close
-      redirect '/admin/vote'
+      redirect '/admin/tools'
     end
 
     get '/archives' do
